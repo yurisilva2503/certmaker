@@ -47,4 +47,3 @@ Com ele, é possível criar modelos totalmente personalizados, utilizando **tags
 <img width="1306" height="643" alt="1" src="https://github.com/user-attachments/assets/4ca085b2-925c-4c6f-a7ab-13a85b8a7e3a" />
 <img width="1307" height="644" alt="2" src="https://github.com/user-attachments/assets/1d850661-bda5-4124-b3d1-f4358e22cdef" />
 
-💡 **CertMaker**: mais agilidade e segurança na emissão de certificados digitais.
