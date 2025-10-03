@@ -1,0 +1,13 @@
+{% extends '/admin/base/base.html' %} {% block conteudo %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<div class="app-content-body">
+  <div class="container-fluid mt-2 fade-in mb-4" style="min-height: 100vh">
+      <p class="text-center lead">Bem-vindo(a) {{usuario.nome}} <i class="bi bi-emoji-smile"></i>.</p>
+  </div>
+</div>
+
+<!-- Incluir Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="/assets/js/admin/index.js"></script>
+{% endblock %}

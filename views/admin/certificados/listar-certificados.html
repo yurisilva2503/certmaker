@@ -1,0 +1,121 @@
+{% extends '/admin/base/base.html' %}
+
+{% block conteudo %}
+<link
+    href="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.2/b-3.2.4/b-colvis-3.2.4/b-html5-3.2.4/b-print-3.2.4/r-3.0.5/datatables.min.css"
+    rel="stylesheet" integrity="sha384-kF7pDsQNJ594osO3qa/uBV3zmWK1GkBv6q8vmvgMuqR8O2uChR8ziL8phUE7tfE0"
+    crossorigin="anonymous">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"
+    integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7"
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"
+    integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n"
+    crossorigin="anonymous"></script>
+<script
+    src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.2/b-3.2.4/b-colvis-3.2.4/b-html5-3.2.4/b-print-3.2.4/r-3.0.5/datatables.min.js"
+    integrity="sha384-/ElAk7FHyIpqPv8ADuOBupFPeZcP6fOn9hNzQH3T2NHSaPI0RpSOJHFAXySCFyq/"
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+    .buttons-copy {
+        --bs-btn-color: #fff;
+        --bs-btn-bg: #0d6efd;
+        --bs-btn-border-color: #0d6efd;
+        --bs-btn-hover-color: #fff;
+        --bs-btn-hover-bg: #0b5ed7;
+        --bs-btn-hover-border-color: #0a58ca;
+        --bs-btn-focus-shadow-rgb: 49, 132, 253;
+        --bs-btn-active-color: #fff;
+        --bs-btn-active-bg: #0a58ca;
+        --bs-btn-active-border-color: #0a53be;
+        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        --bs-btn-disabled-color: #fff;
+        --bs-btn-disabled-bg: #0d6efd;
+        --bs-btn-disabled-border-color: #0d6efd;
+    }
+
+    .buttons-print {
+        --bs-btn-color: #000;
+        --bs-btn-bg: #ffc107;
+        --bs-btn-border-color: #ffc107;
+        --bs-btn-hover-color: #000;
+        --bs-btn-hover-bg: #ffca2c;
+        --bs-btn-hover-border-color: #ffc720;
+        --bs-btn-focus-shadow-rgb: 217, 164, 6;
+        --bs-btn-active-color: #000;
+        --bs-btn-active-bg: #ffcd39;
+        --bs-btn-active-border-color: #ffc720;
+        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        --bs-btn-disabled-color: #000;
+        --bs-btn-disabled-bg: #ffc107;
+        --bs-btn-disabled-border-color: #ffc107;
+    }
+
+    .buttons-pdf {
+        --bs-btn-color: #fff;
+        --bs-btn-bg: #dc3545;
+        --bs-btn-border-color: #dc3545;
+        --bs-btn-hover-color: #fff;
+        --bs-btn-hover-bg: #bb2d3b;
+        --bs-btn-hover-border-color: #b02a37;
+        --bs-btn-focus-shadow-rgb: 225, 83, 97;
+        --bs-btn-active-color: #fff;
+        --bs-btn-active-bg: #b02a37;
+        --bs-btn-active-border-color: #a52834;
+        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        --bs-btn-disabled-color: #fff;
+        --bs-btn-disabled-bg: #dc3545;
+        --bs-btn-disabled-border-color: #dc3545;
+    }
+
+    .dropdown-toggle::after {
+        display: none;
+    }
+
+    /* Estilos para o modal de certificado */
+    .certificado-modal-content {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .pdf-viewer {
+        width: 100%;
+        height: 500px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+    }
+
+    .certificado-info {
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }
+</style>
+
+<div class="app-content-body">
+    <div class="container-xl mt-2 fade-in mb-4" style="min-height: 100vh">
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card card-primary card-outline mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            {% if aviso is not empty %}
+                            <p class="alert alert-{{tipo_aviso}}">{{aviso}}</p>
+                            {% endif %}
+                            <div class="col-md-12">
+                                <table id="tabelaCertificados" class="table table-striped"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{certificados|raw}}
+
+<script src="/assets/js/certificados/listar-certificados.js"></script>
+<script src="/assets/js/certificados/tour-listar-certificados.js"></script>
+{% endblock %}

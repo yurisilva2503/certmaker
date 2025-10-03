@@ -1,0 +1,27 @@
+RewriteEngine On
+
+# Evita loop: se já está indo para /subpasta, não reescreve
+RewriteCond %{REQUEST_URI} !^/public
+
+# Opcional: preserve host; regra genérica para qualquer caminho
+RewriteRule ^(.*)$ /public/$1 [L]
+
+
+# Redireciona tudo para index.php, exceto arquivos/diretórios existentes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+
+# Bloqueia listagem de diretórios
+Options -Indexes
+
+# Bloqueia acesso a arquivos sensíveis
+<FilesMatch "\.(env|log|conf|sql|ini|bak|sh|txt|swp)$">
+    Require all denied
+</FilesMatch>
+
+DirectoryIndex index.php
+
+# Força HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]

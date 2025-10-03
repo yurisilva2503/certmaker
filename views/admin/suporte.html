@@ -1,0 +1,161 @@
+{% extends '/admin/base/base.html' %} 
+
+{% block conteudo %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<div class="app-content-body">
+  <div class="container-fluid mb-4" style="min-height: 100vh">
+    <div class="row d-flex rounded bg-body flex-wrap">
+      <div class="col-md-12 mb-4">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h4 class="card-title mb-0">
+              <i class="fas fa-headset me-2"></i>Central de Suporte
+            </h4>
+          </div>
+          
+          {% if aviso is not empty %}
+          <div class="alert alert-{{tipo_aviso}} m-3 mb-0">
+            {{aviso}}
+          </div>
+          {% endif %}
+          
+          <div class="card-body">
+            <p class="text-muted mb-4">
+              Envie suas dúvidas, problemas ou sugestões para nossa equipe de suporte. 
+              Responderemos o mais breve possível.
+            </p>
+            
+            <form
+              id="formSuporte"
+              name="formSuporte"
+              method="POST"
+              action="/admin/suporte"
+            >
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="assunto" class="form-label">
+                      <strong>Assunto</strong><span class="text-danger">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="assunto"
+                      name="assunto"
+                      placeholder="Ex: Problema com geração de certificados"
+                      required
+                      maxlength="100"
+                    />
+                    <div class="form-text">Descreva brevemente o assunto</div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="prioridade" class="form-label">
+                      <strong>Prioridade</strong>
+                    </label>
+                    <select class="form-select" id="prioridade" name="prioridade">
+                      <option value="baixa">Baixa</option>
+                      <option value="normal" selected>Normal</option>
+                      <option value="alta">Alta (Urgente)</option>
+                    </select>
+                    <div class="form-text">Selecione a urgência do seu atendimento</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="tipo_contato" class="form-label">
+                  <strong>Tipo de Contato</strong>
+                </label>
+                <select class="form-select" id="tipo_contato" name="tipo_contato">
+                  <option value="duvida">Dúvida</option>
+                  <option value="problema" selected>Problema Técnico</option>
+                  <option value="sugestao">Sugestão</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label for="mensagem" class="form-label">
+                  <strong>Mensagem</strong><span class="text-danger">*</span>
+                </label>
+                <textarea
+                  class="form-control"
+                  id="mensagem"
+                  name="mensagem"
+                  rows="8"
+                  placeholder="Descreva detalhadamente sua dúvida, problema ou sugestão..."
+                  required
+                  minlength="10"
+                  maxlength="2000"
+                ></textarea>
+                <div class="form-text">
+                  Mínimo 10 caracteres. Descreva com detalhes para melhor atendimento.
+                  <span id="contadorCaracteres" class="float-end">0/2000</span>
+                </div>
+              </div>
+              
+              <div class="alert alert-info">
+                <h6 class="alert-heading">
+                  <i class="fas fa-info-circle me-2"></i>Informações de Contato
+                </h6>
+                <p class="mb-0">
+                  <strong>Email:</strong> {{ usuario.getEmail() }} | 
+                  <strong>Telefone:</strong> {{ usuario.getTelefone() }}
+                  <br>
+                  Suas informações de contato serão enviadas automaticamente com a mensagem.
+                </p>
+              </div>
+              
+              <div class="card-footer bg-body border-0 px-0">
+                <button class="btn btn-primary" id="btnEnviar" type="submit">
+                  <i class="fas fa-paper-plane me-2"></i> Enviar Mensagem
+                </button>
+                <button type="reset" class="btn btn-outline-secondary ms-2">
+                  <i class="fas fa-eraser me-2"></i> Limpar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <!-- Informações de Contato Adicionais -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-clock me-2"></i>Tempos de Resposta
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row text-center">
+              <div class="col-md-4">
+                <div class="border rounded p-3">
+                  <h6 class="text-primary">Prioridade Alta</h6>
+                  <p class="mb-0">Até 4 horas</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="border rounded p-3">
+                  <h6 class="text-info">Prioridade Normal</h6>
+                  <p class="mb-0">Até 24 horas</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="border rounded p-3">
+                  <h6 class="text-success">Prioridade Baixa</h6>
+                  <p class="mb-0">Até 48 horas</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/assets/js/admin/suporte.js"></script>
+<script src="/assets/js/admin/tour-suporte.js"></script>
+{% endblock %}

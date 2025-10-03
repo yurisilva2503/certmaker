@@ -1,0 +1,159 @@
+{% extends '/admin/base/base.html' %} {% block conteudo %}
+<div class="app-content-body">
+  <div class="container-xl fade-in mb-4" style="min-height: 100vh">
+  <div class="row d-flex rounded p-2 bg-body border flex-wrap mx-2">
+    <div class="col-md-12 mb-4">
+      {% if aviso is not empty %}
+      <p class="alert alert-{{tipo_aviso}}">{{aviso}}</p>
+      {% endif %}
+      <form
+        id="formPerfil"
+        name="formPerfil"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+        <div class="card-body">
+          <div class="row g-3 mb-4">
+            <div
+              class="col-md-12 d-flex flex-column justify-content-center align-items-center gap-2"
+            >
+              <div
+                class="d-flex hover pointer justify-content-center rounded-circle"
+                style="position: relative; overflow: hidden"
+                id="imgPerfilContainer"
+              >
+                <img
+                  id="imgPerfil"
+                  class="img-perfil user-image rounded-circle border"
+                  src="{{usuario.img ? 'data:image/png;base64,' ~ usuario.img : '/assets/img/favicon2.png'}}"
+                  width="125"
+                  height="125"
+                  alt="Imagem de Perfil"
+                  title="Clique para mudar sua imagem de perfil"
+                />
+                <div
+                  id="imgPerfilTexto"
+                  class="d-flex flex-column align-items-center d-none"
+                  style="position: absolute; top: 40px"
+                >
+                  <i class="bi bi-camera-fill text-white"></i>
+                  <p class="m-0 text-white">Mudar Imagem</p>
+                </div>
+              </div>
+              <input
+                type="file"
+                hidden
+                id="inputImagemPerfil"
+                name="inputImagemPerfil"
+                accept="image/png, image/jpeg"
+                disabled
+              />
+              <p class="text-center mb-0 fw-bold">
+                {{capitalizarPalavras(usuario.nome)}}
+              </p>
+            </div>
+            <div class="form-group required col-md-6">
+              <label for="inputNome" class="form-label">Nome</label>
+              <input
+                type="text"
+                class="form-control"
+                name="inputNome"
+                id="inputNome"
+                value="{{ campos.inputNome is defined and campos.inputNome is not empty ? campos.inputNome : capitalizarPalavras(usuario.nome) }}"
+                required
+                minlength="3"
+                maxlength="255"
+              />
+            </div>
+            <div class="form-group required col-md-6">
+              <label for="inputEmail" class="form-label">Email</label>
+              <input
+                type="text"
+                class="form-control"
+                name="inputEmail"
+                id="inputEmail"
+                value="{{usuario.email }}"
+                disabled
+                readonly
+              />
+            </div>
+
+            <div class="form-group required col-md-6">
+              <label for="inputTelefone" class="form-label">Telefone</label>
+              <input
+                type="tel"
+                class="form-control"
+                name="inputTelefone"
+                id="inputTelefone"
+                value="{{ campos.inputTelefone is defined and campos.inputTelefone is not empty ? campos.inputTelefone : usuario.telefone }}"
+                required
+              />
+            </div>
+            <div class="form-group required col-md-6">
+              <label for="inputDataNasc" class="form-label"
+                >Data de Nascimento</label
+              >
+
+              <input
+                type="date"
+                class="form-control"
+                name="inputDataNasc"
+                id="inputDataNasc"
+                value="{{ campos.inputDataNasc is defined and campos.inputDataNasc is not empty ? campos.inputDataNasc : usuario.datanasc }}"
+                required
+              />
+            </div>
+            <div class="form-group required col-md-6">
+              <label for="inputTipoCadastro" class="form-label"
+                >Tipo de Cadastro</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                name="inputTipoCadastro"
+                id="inputTipoCadastro"
+                value="{{capitalizarPalavras(usuario.perfil)}} {{capitalizarPalavras(usuario.tipoCadastro)}}"
+                disabled
+                readonly
+              />
+            </div>
+            <div class="form-group required col-md-6">
+              <label for="inputRegistradoEm" class="form-label"
+                >Registrado em</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                name="inputRegistradoEm"
+                id="inputRegistradoEm"
+                value="{{formatarDataEstrangeira(usuario.criadoEm)}}"
+                readonly
+                disabled
+              />
+            </div>
+            <div class="form-group required col-md-6">
+              <label for="inputEditadoEm" class="form-label">Editado em</label>
+              <input
+                type="text"
+                class="form-control"
+                name="inputEditadoEm"
+                id="inputEditadoEm"
+                value="{{usuario.editadoEm ? formatarDataEstrangeira(usuario.editadoEm) : 'Nunca'}}"
+                readonly
+                disabled
+              />
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-body">
+          <button class="btn btn-primary" id="btnEnviar" type="submit">
+            <i class="bi bi-check2-square"></i> Confirmar Alterações
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+</div>
+<script src="/assets/js/admin/perfil.js"></script>
+{% endblock %}

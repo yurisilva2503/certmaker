@@ -1,0 +1,160 @@
+{% extends 'base/base.html' %} {% block conteudo %} {% if aviso is not empty %}
+<p class="alert alert-{{tipo_aviso}} mx-4">{{aviso}}</p>
+{% endif %}
+
+<div class="container mt-5 mb-4" style="min-height: 100vh">
+  <div class="row bg-body border p-2 mx-2 rounded">
+    <!-- Coluna do formulário -->
+    <div class="col-md-6 mt-4 d-flex align-items-center justify-content-center">
+      <div class="row justify-content-center">
+        <div class="col-md-11">
+          <div class="mb-4">
+            <h3>Registre-se em <strong>{{constant('SITE_NOME')}}</strong></h3>
+            <p class="mb-4">
+              Já possui uma conta?
+              <a
+                class="link-offset-2 link-underline link-underline-opacity-0"
+                href="/"
+                >Entrar</a
+              >
+            </p>
+          </div>
+          <form method="POST">
+            <div class="form-control mb-2 p-3">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group required mb-2">
+                    <label class="form-label" for="inputNome">Nome</label>
+                    <input
+                      type="text"
+                      id="inputNome"
+                      name="inputNome"
+                      class="form-control"
+                      placeholder="Digite seu nome..."
+                      value="{{campos.inputNome}}"
+                      minlength="3"
+                      maxlength="255"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="form-group required mb-2">
+                    <label class="form-label" for="inputEmail">Email</label>
+                    <input
+                      type="email"
+                      id="inputEmail"
+                      name="inputEmail"
+                      class="form-control"
+                      placeholder="Digite seu email..."
+                      value="{{campos.inputEmail}}"
+                      minlength="3"
+                      maxlength="255"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group required mb-2">
+                    <label class="form-label" for="inputTelefone"
+                      >Telefone</label
+                    >
+                    <input
+                      type="tel"
+                      id="inputTelefone"
+                      name="inputTelefone"
+                      class="form-control"
+                      placeholder="Digite seu telefone..."
+                      value="{{campos.inputTelefone}}"
+                      required
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group required mb-2">
+                    <label class="form-label" for="inputDataNasc"
+                      >Data de Nascimento</label
+                    >
+                    <input
+                      type="date"
+                      id="inputDataNasc"
+                      name="inputDataNasc"
+                      class="form-control"
+                      value="{{campos.inputDataNasc}}"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="hr mt-3 mb-3 border-top"></div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group required mb-2">
+                    <label class="form-label" for="inputSenha">Senha</label>
+                    <input
+                      type="password"
+                      id="inputSenha"
+                      name="inputSenha"
+                      class="form-control"
+                      placeholder="Digite sua senha..."
+                      minlength="8"
+                      maxlength="255"
+                      required
+                      value="{{campos.inputSenha}}"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group required mb-3">
+                    <label class="form-label" for="ConfSenha"
+                      >Confirme sua Senha</label
+                    >
+                    <input
+                      type="password"
+                      id="ConfSenha"
+                      name="ConfSenha"
+                      class="form-control"
+                      placeholder="Confirme sua senha..."
+                      minlength="8"
+                      maxlength="255"
+                      required
+                      value="{{campos.ConfSenha}}"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                id="btnRegistrar"
+                class="btn btn-dark w-100"
+              >
+                Registrar <i class="bi bi-person-plus"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coluna da imagem -->
+    <div class="col-md-6 d-none d-md-block">
+      <img
+        src="/assets/img/registrar.png"
+        alt="Image"
+        class="img-fluid opacity-75"
+      />
+    </div>
+  </div>
+</div>
+
+<a href="https://storyset.com/online" hidden
+  >Online illustrations by Storyset</a
+>
+
+<script src="/assets/js/home/cadastro.js"></script>
+{% endblock %}

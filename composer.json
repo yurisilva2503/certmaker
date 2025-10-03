@@ -1,0 +1,22 @@
+{
+    "name": "yuri/certificados",
+    "autoload": {
+        "psr-4": {
+            "controllers\\": "controllers/",
+            "models\\": "models/",
+            "config\\": "config/",
+            "services\\": "services/"
+        }
+    },
+    "authors": [
+        {
+            "name": "yurisilva2503",
+            "email": "yurigsfer@gmail.com"
+        }
+    ],
+    "require": {
+        "twig/twig": "^3.21",
+        "phpmailer/phpmailer": "^6.10",
+        "pecee/simple-router": "^5.4"
+    }
+}
