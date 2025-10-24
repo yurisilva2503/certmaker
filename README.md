@@ -7,13 +7,11 @@ Com ele, é possível criar modelos totalmente personalizados, utilizando **tags
 
 ## ✨ Funcionalidades
 
-- 🖌️ **Criação de modelos personalizados**Crie e salve modelos de certificados reutilizáveis, com edição de texto rica (negrito, itálico, listas, alinhamento e muito mais).
-- 🏷️ **Placeholder Tags**Insira tags como `{nome}`, `{curso}`, `{cpf}`, `{cargahoraria}` para gerar certificados automaticamente sem precisar editar um por um.
-- 🔄 **Reutilização de modelos**Crie uma vez e utilize várias vezes para diferentes turmas, cursos ou eventos.
-- 📊 **Grade dos cursos**Inclua e exiba informações de carga horária, disciplinas e estrutura curricular nos certificados.
-- ✅ **Validação de certificados**Cada certificado possui um **código único** e um **QR Code** de verificação online, garantindo autenticidade.
-- 🎨 **Interface moderna**
-  Sistema com **design em tons de azul**, intuitivo e focado em praticidade.
+- 🖌️ **Criação de modelos personalizados** - Crie e salve modelos de certificados reutilizáveis, com edição de texto rica (negrito, itálico, listas, alinhamento e muito mais).
+- 🏷️ **Placeholder Tags** - Insira tags como `{nome}`, `{curso}`, `{cpf}`, `{cargahoraria}` para gerar certificados automaticamente sem precisar editar um por um.
+- 🔄 **Reutilização de modelos** - Crie uma vez e utilize várias vezes para diferentes turmas, cursos ou eventos.
+- 📊 **Grade dos cursos** - Inclua e exiba informações de carga horária, disciplinas e estrutura curricular nos certificados.
+- ✅ **Validação de certificados** - Cada certificado possui um **código único** e um **QR Code** de verificação online, garantindo autenticidade.
 
 ---
 
