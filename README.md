@@ -33,5 +33,6 @@ Com ele, é possível criar modelos totalmente personalizados, utilizando **tags
 
 ## 📷 Preview
 
-<img width="1306" height="643" alt="1" src="https://github.com/user-attachments/assets/4ca085b2-925c-4c6f-a7ab-13a85b8a7e3a" />
-<img width="1307" height="644" alt="2" src="https://github.com/user-attachments/assets/1d850661-bda5-4124-b3d1-f4358e22cdef" />
+<img width="1897" height="935" alt="image" src="https://github.com/user-attachments/assets/eb382ac4-3322-4c85-8167-5233a9521d9b" />
+<img width="1893" height="937" alt="image" src="https://github.com/user-attachments/assets/60952c0a-7a5c-4e9f-92c9-983a55b2f64e" />
+
