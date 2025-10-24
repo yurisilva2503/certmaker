@@ -1,0 +1,24 @@
+<div class="w-100 bg-body">
+  <header
+    class="d-flex mx-2 p-2 header align-items-center justify-content-center justify-content-md-between  mb-4 border-bottom">
+    <div class="col-md-4 mb-1 d-flex ">
+      <a href="/" class="d-flex align-items-center p-2 text-body text-decoration-none">
+        <p class="m-0 fw-bold text-body" style="font-family: monospace; font-size: 1.5rem;"><span class="text-primary">{{constant('SITE_NOME')[0:1]}}</span>{{constant('SITE_NOME')[1:]}}</p>
+      </a>
+    </div>
+    <div class="col-md-4 mb-1 text-center">
+      <a href="/" class="text-body text-decoration-none link-header-base"><i class="bi bi-key"></i> Validar Certificado</a>
+    </div>
+    <div class="col-md-4 d-flex align-items-center justify-content-end gap-2">
+      <button onclick="window.open('/login', '_self')" type="button" class="btn btn-primary">
+        <i class="bi bi-box-arrow-in-right"></i> Entrar 
+      </button>
+      <button onclick="window.open('/registrar', '_self')" type="button" class="btn btn-dark"><i class="bi bi-person-plus"></i> Quero me
+        Registrar</button>
+    </div>
+  </header>
+  
+    <button id="btnTema" class="btn btn-primary my-2 mx-2 display-5 rounded-circle position-fixed bottom-0 end-0 z-3">
+      <i class="bi bi-moon-stars-fill"></i>
+    </button>
+</div>

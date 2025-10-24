@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta name="description" content="{{ constant('SITE_DESCRICAO') }}" />
+    <meta name="keywords" content="{{ constant('SITE_KEYWORDS') }}" />
+    <meta name="author" content="{{ constant('SITE_AUTOR') }}" />
+    <meta name="theme-color" content="{{ constant('SITE_TEMA') }}" />
+    <link
+      rel="icon"
+      href="{{ constant ('SITE_FAVICON')}}"
+      type="{{ constant('SITE_TYPEFAVICON') }}"
+    />
+    {% if titulo %}
+    <title>{{ constant('SITE_NOME')}} - {{ titulo }}</title>
+    {% else %}
+    <title>{{ constant('SITE_NOME')}}</title>
+    {% endif %}
+    <link rel="stylesheet" href="/assets/css/boxicons/boxicons.min.css" />
+    <link rel="stylesheet" href="/assets/css/fonts.css" fetchpriority="high" />
+    <link
+      rel="stylesheet"
+      href="/assets/css/boxicons/boxicons-brands.min.css"
+    />
+    <link rel="stylesheet" href="/assets/css/boxicons/animations.min.css" />
+    <link
+      rel="stylesheet"
+      href="/assets/css/boxicons/transformations.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="/assets/css/boxicons/transformations.min.css"
+    />
+    <link rel="stylesheet" href="/assets/css/bootstrap/bootstrap-icons.css" />
+    <link
+      rel="stylesheet"
+      href="/assets/css/adminlte/overlayscrollbars.min.css"
+    />
+    <link rel="stylesheet" href="/assets/css/adminlte/adminlte.css" />
+    <link rel="stylesheet" href="/assets/css/adminlte/apexcharts.css" />
+    <link rel="stylesheet" href="/assets/css/adminlte/jsvectormap.min.css" />
+    <link
+      href="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.2/b-3.2.4/b-colvis-3.2.4/b-html5-3.2.4/b-print-3.2.4/r-3.0.5/datatables.min.css"
+      rel="stylesheet"
+      integrity="sha384-kF7pDsQNJ594osO3qa/uBV3zmWK1GkBv6q8vmvgMuqR8O2uChR8ziL8phUE7tfE0"
+      crossorigin="anonymous"
+    />
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"
+      integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"
+      integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.2/b-3.2.4/b-colvis-3.2.4/b-html5-3.2.4/b-print-3.2.4/r-3.0.5/datatables.min.js"
+      integrity="sha384-/ElAk7FHyIpqPv8ADuOBupFPeZcP6fOn9hNzQH3T2NHSaPI0RpSOJHFAXySCFyq/"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" href="/assets/css/sweetalert2/sweetalert2.min.css" />
+    
+    <script src="/assets/js/sweetalert2/sweetalert2.min.js"></script>
+    <script src="/assets/js/tema/index.js"></script>
+    <script src="/assets/js/admin/driver.js"></script>
+    <link rel="stylesheet" href="/assets/css/driver.css"/>
+    <script src="/assets/js/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/adminlte/overlayscrollbars.browser.es6.min.js"></script>
+    <script src="/assets/js/adminlte/popper.min.js"></script>
+    <script src="/assets/js/adminlte/adminlte.js"></script>
+    <script src="/assets/js/adminlte/sidebar.js"></script>
+    <script src="/assets/js/home/helpers.js"></script>
+    <script src="/assets/js/admin/tour.js"></script>
+  </head>
+
+  <body class="layout-fixed sidebar-expand-lg sidebar-open bg-body-tertiary">
+</html>

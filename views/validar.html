@@ -1,0 +1,132 @@
+{% extends 'base/base.html' %} {% block conteudo %}
+<div class="container mt-5 mb-4" style="min-height: 100vh">
+   {% if aviso is not empty %}
+    <p class="alert alert-{{tipo_aviso}} mt-2">{{aviso}}</p>
+  {% endif %}
+  <div class="row bg-body border p-2 mx-2 rounded">
+    <div class="col-md-6 d-none d-md-block">
+      <img
+        src="/assets/img/validar.png"
+        alt="Image"
+        class="img-fluid opacity-75"
+      />
+    </div>
+    <div class="col-md-6 my-3 px-3 d-flex align-items-center justify-content-center">
+      <div class="row justify-content-center">
+        <div class="col-md-10 ">
+          <div>
+            <h3>
+              Validar seu certificado em
+              <strong>{{constant('SITE_NOME')}}</strong>
+            </h3>
+            <p class="mb-2">
+              Para validar um certificado, insira o código abaixo:
+            </p>
+          </div>
+         
+
+          <form method="post" id="formValidar">
+            <div class="">
+              <div class="input-group required mb-3">
+                <span class="input-group-text" id="basic-addon1"
+                  ><i class="bi bi-key"></i
+                ></span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Código do certificado"
+                  aria-label="Código do certificado"
+                  name="inputCodigo"
+                  id="inputCodigo"
+                  title="Digite o código do certificado"
+                  value="{{codigo}}"
+                  required
+                />
+              </div>
+              <button type="submit" class="btn btn-dark">
+                <i class="bi bi-box-arrow-in-right"></i> Validar
+              </button>
+              {% if certificado is empty %}
+              {% endif %} {% if certificado is not empty %}
+              <div class="mt-4">
+                <div class="card border">
+                  <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                      <i class="bi bi-file-earmark-check"></i> Certificado Encontrado
+                    </h5>
+                  </div>
+                  <div class="card-body border-bottom">
+                    <div class="row g-3">
+                      <h4 class="fw-bold text-center">{{certificado.nome_aluno}}</h4>
+                      <div class="col-md-8 mt-1">
+                        <p class="text-muted mb-1">
+                          <i class="bi bi-person-badge"></i> CPF:
+                          {{certificado.cpf_aluno ?? 'Não informado'}}
+                        </p>
+                        <p class="mb-1">
+                          <i class="bi bi-journal-text"></i> Curso:
+                          {{certificado.curso ?? 'Não informado'}}
+                        </p>
+                        <p class="mb-1">
+                          <i class="bi bi-hourglass-split"></i> Carga Horária:
+                          {{certificado.carga_horaria ?? 'Não informado'}}
+                        </p>
+                        <p class="mb-1">
+                          <i class="bi bi-calendar-event"></i> Emissão:
+                          {{certificado.data_emissao|date("d/m/Y")}}
+                        </p>
+                        <p class="mb-1">
+                          <i class="bi bi-calendar-x"></i> Validade:
+                          {{certificado.data_validade ?
+                          certificado.data_validade|date("d/m/Y") : 'Sem
+                          validade'}}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  {% if certificado.campos_personalizados is not empty %} {% set
+                  campos = certificado.campos_personalizados %}
+                  <div class="card mt-2 border-0">
+                    <ul class="list-group list-group-flush">
+                      {% for chave, valor in campos %} {% if chave not in
+                      ['nome', 'cpf', 'curso',
+                      'carga horaria'] %}
+                      <li
+                        class="list-group-item d-flex flex-column"
+                      >
+                        <span class="fw-semibold text-capitalize"
+                          >{{ chave }}</span
+                        >
+                        <span>{{ valor|raw }}</span>
+                      </li>
+                      {% endif %} {% endfor %}
+                    </ul>
+                  </div>
+                  
+                  {% endif %}
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<a href="https://storyset.com/online" hidden
+  >Online illustrations by Storyset</a
+>
+
+<script>
+  const formValidar = document.getElementById("formValidar");
+  const inputCodigo = document.getElementById("inputCodigo");
+
+  formValidar.addEventListener("submit", function (e) {
+    e.preventDefault();
+    window.location.href = `/validar/${inputCodigo.value}`
+   
+  })
+</script>
+
+{% endblock %}

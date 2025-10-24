@@ -1,0 +1,496 @@
+{% extends '/admin/base/base.html' %} {% block conteudo %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<div class="app-content-body">
+   <button class="btn btn-warning" style="position: fixed; bottom: 7px; right: 70px; z-index: 999999;" id="btnIniciarTour" role="button" onclick="iniciarTutorial()"><i class="bi bi-cone-striped"></i> Iniciar Tour</button>
+  <div class="container-fluid mt-2 fade-in mb-4" style="min-height: 100vh">
+    <!-- Cards de Resumo -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card bg-primary text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h4 class="mb-0">{{ dados.resumo.total_certificados ?? 0 }}</h4>
+                <p class="mb-0">Total de Certificados</p>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-certificate fa-2x"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="card bg-success text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h4 class="mb-0">{{ dados.resumo.total_modelos ?? 0 }}</h4>
+                <p class="mb-0">Modelos Criados</p>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-file-alt fa-2x"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="card bg-danger">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h4 class="mb-0">{{ dados.resumo.certificados_hoje ?? 0 }}</h4>
+                <p class="mb-0 text-white">Emitidos Hoje</p>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-calendar-day fa-2x text-white"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h4 class="mb-0">{{ dados.resumo.certificados_mes ?? 0 }}</h4>
+                <p class="mb-0 text-white">Este Mês</p>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-calendar-alt fa-2x text-white"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="row mb-4">
+      <!-- Evolução Mensal -->
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-chart-line me-2"></i>Evolução Mensal de Certificados
+            </h5>
+          </div>
+          <div class="card-body">
+            <canvas id="evolucaoChart"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Status dos Certificados -->
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-chart-pie me-2"></i>Status dos Certificados
+            </h5>
+          </div>
+          <div class="card-body">
+            <canvas id="statusChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <!-- Distribuição por Curso -->
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-chart-bar me-2"></i>Top Cursos
+            </h5>
+          </div>
+          <div class="card-body">
+            <canvas id="cursosChart" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Modelos Mais Usados -->
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-tags me-2"></i>Modelos Mais Utilizados
+            </h5>
+          </div>
+          <div class="card-body">
+            <canvas id="modelosChart" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Atividade Recente -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-clock me-2"></i>Atividade Recente
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Aluno</th>
+                    <th>Curso</th>
+                    <th>Data de Emissão</th>
+                    <th>Código</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if dados.atividadeRecente %}
+                    {% for certificado in dados.atividadeRecente %}
+                    <tr>
+                      <td>{{ certificado.nome_aluno }}</td>
+                      <td>{{ certificado.curso }}</td>
+                      <td>{{ certificado.data_emissao|date('d/m/Y H:i') }}</td>
+                      <td><code>{{ certificado.codigo_verificacao }}</code></td>
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="4" class="text-center">Nenhuma atividade recente</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Incluir Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const dados = {{ dados|json_encode|raw }};
+  
+  if (document.getElementById('evolucaoChart')) {
+    new Chart(document.getElementById('evolucaoChart'), {
+      type: 'line',
+      data: {
+        labels: dados.evolucaoMensal.labels,
+        datasets: [{
+          label: 'Certificados Emitidos',
+          data: dados.evolucaoMensal.data,
+          borderColor: '#007bff',
+          backgroundColor: 'rgba(0, 123, 255, 0.1)',
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+  }
+  
+  if (document.getElementById('statusChart')) {
+    new Chart(document.getElementById('statusChart'), {
+      type: 'doughnut',
+      data: {
+        labels: dados.certificadosPorStatus.labels,
+        datasets: [{
+          data: dados.certificadosPorStatus.data,
+          backgroundColor: dados.certificadosPorStatus.colors
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }
+    });
+  }
+  
+  if (document.getElementById('cursosChart')) {
+    new Chart(document.getElementById('cursosChart'), {
+      type: 'bar',
+      data: {
+        labels: dados.distribuicaoCursos.labels,
+        datasets: [{
+          label: 'Certificados',
+          data: dados.distribuicaoCursos.data,
+          backgroundColor: '#28a745'
+        }]
+      },
+      options: {
+        responsive: true,
+        indexAxis: 'y',
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+  }
+  
+  if (document.getElementById('modelosChart')) {
+    new Chart(document.getElementById('modelosChart'), {
+      type: 'bar',
+      data: {
+        labels: dados.modelosMaisUsados.labels,
+        datasets: [{
+          label: 'Utilizações',
+          data: dados.modelosMaisUsados.data,
+          backgroundColor: '#6f42c1'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+  }
+});
+</script>
+<script>
+  const tutorialJaVisto = localStorage.getItem('tutorial_admin_visto');
+  
+  function iniciarTutorial() {
+    const driver = window.driver.js.driver;
+
+    let driverObj = driver({
+      popoverClass: 'bg-' + temaAlerta + ' text-body',
+      showProgress: true,
+      steps: [
+        {
+          element: ".aba",
+          popover: {
+            title: 'Bem-vindo(a) ao {{ constant("SITE_NOME")}} <i class="bi bi-emoji-smile"></i>.',
+            description: "Vamos fazer um tour rápido pelo sistema para você conhecer todas as funcionalidades.",
+            side: "center",
+            align: "start",
+            onNextClick: () => {
+              const body = document.querySelector('body');
+              if (body.classList.contains('sidebar-collapse')) {
+                document.querySelector('#toggleSidebar').click();
+              }
+              driverObj.moveNext();
+            }
+          }
+        },
+        {
+          element: "#menu-inicio",
+          popover: {
+            title: "Página Inicial",
+            description: "Aqui você encontra um resumo completo do sistema com estatísticas, gráficos e atividades recentes.",
+            side: "right",
+            align: "start"
+          }
+        },
+        {
+          element: "#menu-certificados",
+          popover: {
+            title: "Menu de Certificados",
+            description: "Esta é a seção principal onde você gerencia todos os certificados. Clique para expandir e ver as opções.",
+            side: "right",
+            align: "start",
+            onNextClick: () => {
+              const menuCertificados = document.querySelector('#menu-certificados');
+              if (!menuCertificados.classList.contains('menu-is-opening') && 
+                  !menuCertificados.classList.contains('menu-open')) {
+                menuCertificados.querySelector('a').click();
+              }
+              driverObj.moveNext();
+            }
+          }
+        },
+        {
+          element: "#submenu-modelos",
+          popover: {
+            title: "Gestão de Modelos",
+            description: "Aqui você cria e gerencia os modelos de certificado que serão utilizados.",
+            side: "right",
+            align: "start",
+            onNextClick: () => {
+              const submenuModelos = document.querySelector('#submenu-modelos');
+              if (!submenuModelos.querySelector('.nav-treeview').style.display || 
+                  submenuModelos.querySelector('.nav-treeview').style.display === 'none') {
+                submenuModelos.querySelector('a').click();
+              }
+              driverObj.moveNext();
+            }
+          }
+        },
+        {
+          element: "#submenu-gerar-modelo",
+          popover: {
+            title: "Criar Novo Modelo",
+            description: "Clique aqui para criar um novo modelo de certificado personalizado.",
+            side: "right",
+            align: "start"
+          }
+        },
+        {
+          element: "#submenu-listar-modelos",
+          popover: {
+            title: "Listar Modelos",
+            description: "Visualize, edite ou exclua modelos de certificado já criados.",
+            side: "right",
+            align: "start"
+          }
+        },
+        {
+          element: "#submenu-emitidos",
+          popover: {
+            title: "Certificados Emitidos",
+            description: "Gerencie os certificados já emitidos para os alunos.",
+            side: "right",
+            align: "start",
+            onNextClick: () => {
+              const submenuEmitidos = document.querySelector('#submenu-emitidos');
+              if (!submenuEmitidos.querySelector('.nav-treeview').style.display || 
+                  submenuEmitidos.querySelector('.nav-treeview').style.display === 'none') {
+                submenuEmitidos.querySelector('a').click();
+              }
+              driverObj.moveNext();
+            }
+          }
+        },
+        {
+          element: "#submenu-listar-certificados",
+          popover: {
+            title: "Listar Certificados Emitidos",
+            description: "Visualize todos os certificados emitidos, com opções de filtro e busca.",
+            side: "right",
+            align: "start"
+          }
+        },
+        {
+          element: "#menu-suporte",
+          popover: {
+            title: "Suporte",
+            description: "Precisa de ajuda? Acesse nossa seção de suporte.",
+            side: "right",
+            align: "start",
+            onNextClick: () => {
+              const menusAbertos = document.querySelectorAll('.menu-open');
+              menusAbertos.forEach(menu => {
+                menu.querySelector('a').click();
+              });
+              driverObj.moveNext();
+            }
+          }
+        },
+        {
+          element: "#btn-perfil",
+          popover: {
+            title: "Seu Perfil <i class='bi bi-person-circle'></i>",
+            description: "Aqui você gerencia sua conta pessoal e pode sair do sistema.",
+            side: "left",
+            align: "start",
+            onNextClick: () => {
+               const body = document.querySelector('body');
+              if (body.classList.contains('sidebar-open')) {
+                document.querySelector('#toggleSidebar').click();
+              }
+
+              driverObj.moveNext();
+            }
+
+          }
+        },
+        {
+          element: ".row.mb-4 .col-md-3:first-child",
+          popover: {
+            title: "Resumo Estatístico",
+            description: "Acompanhe números importantes do sistema em tempo real.",
+            side: "bottom",
+            align: "start"
+          }
+        },
+        {
+          element: "#evolucaoChart",
+          popover: {
+            title: "Gráficos Interativos",
+            description: "Visualize a evolução mensal e distribuição dos certificados.",
+            side: "top",
+            align: "start"
+          }
+        },
+        {
+          element: ".table-responsive",
+          popover: {
+            title: "Atividade Recente",
+            description: "Acompanhe os últimos certificados emitidos no sistema.",
+            side: "top",
+            align: "start"
+          }
+        },
+        {
+          element: ".aba",
+          popover: {
+            title: "Tour Concluído! 🎓",
+            description: "Agora você conhece todas as funcionalidades do sistema. Você pode reiniciar este tour a qualquer momento clicando no botão 'Iniciar Tour' no canto inferior direito.",
+            side: "center",
+            align: "start",
+            onNextClick: () => {
+              localStorage.setItem('tutorial_admin_visto', 'true');
+              driverObj.destroy();
+            }
+          }
+        }
+      ],
+      onDestroyed: () => {
+        const menusAbertos = document.querySelectorAll('.menu-open');
+        menusAbertos.forEach(menu => {
+          menu.querySelector('a').click();
+        });
+        const userDropdown = document.querySelector('.user-menu .dropdown-menu.show');
+        if (userDropdown) {
+          const toggle = userDropdown.previousElementSibling;
+          if (toggle) toggle.click();
+        }
+      }
+    });
+
+    driverObj.drive();
+  }
+
+  if (!tutorialJaVisto) {
+    iniciarTutorial();
+  }
+
+  const botaoTour = document.createElement('button');
+  botaoTour.className = 'btn btn-warning position-fixed';
+  botaoTour.style.cssText = 'position: fixed; bottom: 7px; right: 70px; z-index: 999999;';
+  botaoTour.innerHTML = '<i class="bi bi-play-circle"></i> Iniciar Tour';
+  botaoTour.id = 'btnIniciarTour';
+  botaoTour.addEventListener('click', iniciarTutorial);
+  
+  document.body.appendChild(botaoTour);
+</script>
+{% endblock %}

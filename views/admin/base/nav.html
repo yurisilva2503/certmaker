@@ -1,0 +1,92 @@
+<aside class="app-sidebar bg-body border-end">
+  <!--begin::Sidebar Brand-->
+  <div class="sidebar-brand">
+    <a href="/admin" class="brand-link px-4">
+      <p class="m-0 fw-bold text-body" style="font-family: monospace; font-size: 1.5rem">
+        <span class="text-primary">{{constant('SITE_NOME')[0:1]}}</span>{{constant('SITE_NOME')[1:]}}
+      </p>
+    </a>
+  </div>
+  <!--end::Sidebar Brand-->
+  
+  <!--begin::Sidebar Wrapper-->
+  <div class="sidebar-wrapper">
+    <nav class="">
+      <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="navigation" aria-label="Main navigation"
+        data-accordion="false" id="navigation">
+        
+        <!-- Página Inicial -->
+        <li class="nav-item" id="menu-inicio">
+          <a href="/admin" class="nav-link {{ sidebar == 'Página Inicial' ? 'active' : ''}}">
+            <i class="nav-icon bi bi-grid"></i>
+            <p>Página Inicial</p>
+          </a>
+        </li>
+        
+        <!-- Certificados -->
+        <li class="nav-item guia-certificados" id="menu-certificados">
+          <a href="#" class="nav-link certificado-item">
+            <i class="nav-icon bi bi-card-checklist"></i>
+            <p>
+              Certificados
+              <i class="nav-arrow bi bi-chevron-right"></i>
+            </p>
+          </a>
+
+          <ul class="nav nav-treeview" style="display: none; margin-left: 12px;">
+            <!-- Modelos -->
+            <li class="nav-item" id="submenu-modelos">
+              <a href="#" class="nav-link">
+                <i class="bi bi-credit-card-2-front"></i>
+                <p>
+                  Modelos
+                  <i class="nav-arrow bi bi-chevron-right"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview" style="display: none;">
+                <li class="nav-item" id="submenu-gerar-modelo">
+                  <a href="/admin/certificados/gerar-modelo" class="nav-link">
+                    <i class="nav-icon bi bi-dot"></i>
+                    <p>Gerar Modelo</p>
+                  </a>
+                </li>
+                <li class="nav-item" id="submenu-listar-modelos">
+                  <a href="/admin/certificados/listar-modelos" class="nav-link">
+                    <i class="nav-icon bi bi-dot"></i>
+                    <p>Listar Modelos</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
+          
+            <!-- Emitidos -->
+            <li class="nav-item" id="submenu-emitidos">
+              <a href="#" class="nav-link">
+                <i class="bi bi-person-vcard-fill"></i>
+                <p>
+                  Emitidos
+                  <i class="nav-arrow bi bi-chevron-right"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview" style="display: none;">
+                <li class="nav-item" id="submenu-listar-certificados">
+                  <a href="/admin/certificados/listar-certificados" class="nav-link">
+                    <i class="nav-icon bi bi-dot"></i>
+                    <p>Listar Emitidos</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        
+        <li class="nav-item" id="menu-suporte">
+          <a href="/admin/suporte" class="nav-link {{ sidebar == 'Suporte' ? 'active' : ''}}">
+            <i class="nav-icon bi bi-question-circle"></i>
+            <p>Suporte</p>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</aside>

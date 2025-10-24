@@ -1,0 +1,22 @@
+RewriteEngine On
+
+# Redireciona tudo para index.php, exceto arquivos/diretórios existentes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+
+# Bloqueia listagem de diretórios
+Options -Indexes
+
+# Bloqueia acesso a arquivos sensíveis
+<FilesMatch "\.(env|log|conf|sql|ini|bak|sh|txt|swp)$">
+    Require all denied
+</FilesMatch>
+
+# Força HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Tamanho de arquivos upload
+php_value upload_max_filesize 5M
+php_value post_max_size 20M

@@ -1,0 +1,818 @@
+{% extends '/admin/base/base.html' %} {% block conteudo %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12 d-flex flex-wrap gap-1 align-items-center justify-content-center pb-3">
+            <div class="d-flex flex-wrap justify-content-center gap-1">
+                <button class="btn btn-sm btn-warning me-2" id="addTextBtn">
+                    <i class="bi bi-textarea-t"></i> Texto
+                </button>
+                <label for="uploadImageBtn" class="btn btn-sm btn-danger uploadImageBtn-container me-2 mb-0">
+                    <i class="bi bi-image"></i> Imagem
+                    <input id="uploadImageBtn" type="file" accept="image/*" style="display:none">
+                </label>
+                <button class="btn btn-sm btn-success me-2" id="addTabelaConteudoBtn">
+                    <i class="bi bi-table"></i> Tabela de Conteúdo
+                </button>
+                
+                <div class="vr mx-2"></div>
+                <label for="zoom">Zoom</label>
+                <input id="zoom" type="range" style="width: 100px;" class="form-range form-range-sm" min="0.4" max="1.6"
+                    step="0.05" value="0.65">
+                <button class="btn btn-sm btn-dark me-2" id="addQRCodeBtn">
+                    <i class="bi bi-qr-code"></i> QR Code
+                </button>
+                <button class="btn btn-sm btn-info me-2" id="addLinkValidacao">
+                    <i class="bi bi-link"></i> Link de Validação
+                </button>
+                <button class="btn btn-sm btn-secondary me-2" id="addPageBtn">
+                    <i class="bi bi-file-earmark-plus"></i> Nova Página
+                </button>
+                <button class="btn btn-sm btn-outline-danger me-2" id="removePageBtn">
+                    <i class="bi bi-file-earmark-minus"></i> Remover Página
+                </button>
+                <button class="btn btn-sm btn-outline-primary me-2" id="prevPageBtn">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-primary me-2" id="nextPageBtn">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+                <span id="pageIndicator">Página 1/1</span>
+            </div>
+        </div>
+
+        <!-- Painel lateral esquerdo -->
+        <div class="col-md-2">
+            <div class="card mb-3">
+                <div class="card-header bg-body fw-bold">Configurações do Modelo</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="modelName" class="form-label">Nome do Modelo</label>
+                        <input type="text" class="form-control form-control-sm" id="modelName"
+                            placeholder="Nome do modelo">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="orientationSelect" class="form-label">Orientação</label>
+                        <select class="form-select form-select-sm" id="orientationSelect">
+                            <option value="portrait">Retrato (A4)</option>
+                            <option value="landscape" selected>Paisagem (A4)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="backgroundInput" class="form-label">Fundo (opcional)</label>
+                        <input class="form-control form-control-sm" id="backgroundInput" type="file" accept="image/*">
+                        <button class="btn btn-sm btn-outline-danger mt-2" id="clearBackgroundBtn"
+                            style="display: none"><i class="bi bi-trash"></i>Remover Fundo</button>
+                    </div>
+                    <button class="btn btn-sm btn-primary me-2" id="saveModelBtn">
+                        <i class="bi bi-save"></i> Salvar
+                    </button>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header bg-body fw-bold">Camadas</div>
+                <div class="card-body p-2" style="max-height: 300px; overflow-y: auto">
+                    <div class="layers" id="layersList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Área central de visualização -->
+        <div class="col-md-7 mb-3">
+            <div class="card text-end">
+                <div class="card-body rounded bg-light d-flex justify-content-center">
+                    <canvas class="border border-dark rounded shadow-sm mw-100" id="stage"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Painel lateral direito de propriedades -->
+        <div class="col-md-3">
+            <div class="card properties-panel">
+                <div class="card-header bg-body fw-bold">Propriedades</div>
+                <div class="card-body" style="max-height: 500px; overflow-y: auto">
+                    <div id="noSelection" class="text-center text-muted py-3">
+                        Selecione um elemento para editar suas propriedades.
+                    </div>
+
+                    <div id="elementProps" style="display:none">
+                        <div class="mb-3">
+                            <label class="form-label">Tipo</label>
+                            <input type="text" class="form-control form-control-sm" id="propType" disabled>
+                        </div>
+
+                        <div class="row mb-3 propriedades-posicoes">
+                            <div class="col">
+                                <label class="form-label">Pos X (px)</label>
+                                <input type="number" class="form-control form-control-sm" id="propX">
+                            </div>
+                            <div class="col">
+                                <label class="form-label">Pos Y (px)</label>
+                                <input type="number" class="form-control form-control-sm" id="propY">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3 propriedades-tamanhos">
+                            <div class="col">
+                                <label class="form-label">Largura (px)</label>
+                                <input type="number" class="form-control form-control-sm" id="propW">
+                            </div>
+                            <div class="col">
+                                <label class="form-label">Altura (px)</label>
+                                <input type="number" class="form-control form-control-sm" id="propH">
+                            </div>
+                        </div>
+
+                        <div class="mb-3 propriedades-opacidade">
+                            <label class="form-label">Opacidade</label>
+                            <input type="range" class="form-range" id="propOpacity" min="0" max="1" step="0.05"
+                                value="1">
+                        </div>
+<div class="mb-3 propriedades-texto">
+    <label class="form-label">Texto</label>
+    <div class="btn-toolbar mb-2" role="toolbar">
+        <div class="btn-group btn-group-sm me-2" role="group">
+            <button type="button" class="btn btn-outline-secondary" data-format="bold" title="Negrito">
+                <i class="bi bi-type-bold"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary" data-format="italic" title="Itálico">
+                <i class="bi bi-type-italic"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary" data-format="underline" title="Sublinhado">
+                <i class="bi bi-type-underline"></i>
+            </button>
+        </div>
+        <div class="btn-group btn-group-sm me-2" role="group">
+            <button type="button" class="btn btn-outline-secondary" data-format="clean" title="Limpar formatação">
+                <i class="bi bi-eraser"></i>
+            </button>
+        </div>
+    </div>
+    <div id="editor-container" style="height: 120px; margin-bottom: 10px;"></div>
+    <textarea class="form-control form-control-sm" id="propText" rows="3" style="display: none;"></textarea>
+</div>
+
+                        <div class="row d-flex mb-3 propriedades-fonte">
+                            <div class="col-md-6">
+                                <label class="form-label">Fonte</label>
+                                <select class="form-select form-select-sm" id="propFont">
+                                <!-- Fontes Web Safe -->
+                                <option value="arial">Arial</option>
+                                <option value="helvetica">Helvetica</option>
+                                <option value="'Times New Roman'">Times New Roman</option>
+                                <option value="courier">Courier</option>
+                                
+                                <!-- Google Fonts Mais Populares -->
+                                <option value="roboto">Roboto</option>
+                                <option value="'Open Sans'">Open Sans</option>
+                                <option value="lato">Lato</option>
+                                <option value="montserrat">Montserrat</option>
+                                <option value="'Playfair Display'">Playfair Display</option>
+                                <option value="'Source Sans Pro'">Source Sans Pro</option>
+                                <option value="poppins">Poppins</option>
+                                <option value="raleway">Raleway</option>
+                                <option value="merriweather">Merriweather</option>
+                                <option value="oswald">Oswald</option>
+                                <option value="'Noto Sans'">Noto Sans</option>
+                                <option value="'Noto Serif'">Noto Serif</option>
+                                <option value="ubuntu">Ubuntu</option>
+                                <option value="'Work Sans'">Work Sans</option>
+                                <option value="inter">Inter</option>
+                                <option value="nunito">Nunito</option>
+                                <option value="'Josefin Sans'">Josefin Sans</option>
+                                <option value="'Libre Baskerville'">Libre Baskerville</option>
+                                <option value="'Crimson Text'">Crimson Text</option>
+                                <option value="'Abril Fatface'">Abril Fatface</option>
+                                <option value="'Bebas Neue'">Bebas Neue</option>
+                                <option value="'Dancing Script'">Dancing Script</option>
+                                <option value="'Pacifico'">Pacifico</option>
+                                <option value="'Shadows Into Light'">Shadows Into Light</option>
+                                <option value="'Great Vibes'">Great Vibes</option>
+                                <option value="'Satisfy'">Satisfy</option>
+                                <option value="'Lobster'">Lobster</option>
+                                <option value="'Righteous'">Righteous</option>
+                                <option value="'Bangers'">Bangers</option>
+                                <option value="'Chewy'">Chewy</option>
+                                <option value="'Fredoka One'">Fredoka One</option>
+                                <option value="'Luckiest Guy'">Luckiest Guy</option>
+                                <option value="'Permanent Marker'">Permanent Marker</option>
+                                <option value="'Rubik'">Rubik</option>
+                                <option value="'Quicksand'">Quicksand</option>
+                                <option value="'Exo 2'">Exo 2</option>
+                                <option value="'Orbitron'">Orbitron</option>
+                                <option value="'Rajdhani'">Rajdhani</option>
+                                <option value="'Titillium Web'">Titillium Web</option>
+                                <option value="'Fira Sans'">Fira Sans</option>
+                                <option value="'Cabin'">Cabin</option>
+                                <option value="'Hind'">Hind</option>
+                                <option value="'Arimo'">Arimo</option>
+                                <option value="'Muli'">Muli</option>
+                                <option value="'Catamaran'">Catamaran</option>
+                                <option value="'Varela Round'">Varela Round</option>
+                            </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tamanho</label>
+                                <input type="number" class="form-control form-control-sm" id="propFontSize" value="18">
+                            </div>
+                        </div>
+
+                        <div class="row d-flex mb-3 propriedades-fonte-2">
+                            <div class="col-md-12">
+                                <label class="form-label">Cor do Texto</label>
+                                <input type="color" class="form-control w-100 form-control-color" id="propColor" value="#222222"
+                                    title="Escolha a cor do texto">
+                            </div>
+                        </div>
+                        <div class="row d-flex flex-wrap mb-3 propriedades-cor-texto">
+                            <div class="col-md-6">
+                                <label for="propVerticalAlign" class="form-label">Alinhamento Vertical</label>
+                                <select id="propVerticalAlign" class="form-select">
+                                    <option value="top">Topo</option>
+                                    <option value="middle">Meio</option>
+                                    <option value="bottom">Base</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Alinhamento Horizontal</label>
+                                <select class="form-select form-select-sm" id="propAlign">
+                                    <option value="center">Centralizado</option>
+                                    <option value="left">Esquerda</option>
+                                    <option value="right">Direita</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row d-flex flex-wrap mb-3 propriedades-rotacao">
+                            <div class="col-md-12">
+                                <div class="mb-3 propriedades-rotacao">
+                                    <label class="form-label">Rotação (graus)</label>
+                                    <input type="number" class="form-control form-control-sm" id="propRotate" value="0">
+                                </div>
+                            </div>
+                        </div>
+                        
+
+                        <div class="mb-3 propriedades-placeholderTags">
+                            <label class="form-label">Placeholder Tags</label>
+                            <div class="d-flex flex-wrap gap-1">
+                                <button class="btn btn-sm btn-success" data-tag="{nome}">{nome}</button>
+                                <button class="btn btn-sm btn-success" data-tag="{cpf}">{cpf}</button>
+                                <button class="btn btn-sm btn-success" data-tag="{curso}">{curso}</button>
+                                <button class="btn btn-sm btn-success" data-tag="{carga horaria}">{cargahoraria}</button>
+                                <button class="btn btn-sm btn-success" data-tag="{local}">{local}</button>
+                                <button class="btn btn-sm btn-success" data-tag="{data}">{data}</button>
+                                <button class="btn btn-sm btn-success" data-tag="{instituicao}">{instituicao}</button>
+                                <button class="btn btn-sm btn-success" data-tag="{coordenador}">{coordenador}</button>
+                                <button class="btn btn-sm btn-success" data-tag="{ministrante}">{ministrante}</button>
+                                <button class="btn btn-sm btn-success" data-tag="{cidade}">{cidade}</button>
+                                <button class="btn btn-sm btn-success" data-tag="{estado}">{estado}</button>
+                                <button class="btn btn-sm btn-success" data-tag="{periodo}">{periodo}</button>
+                                <button class="btn btn-sm btn-success" data-tag="{conteudo programático}">{conteudo programatico}</button>
+                                <button class="btn btn-sm btn-success propriedades-placeholderTags-ultimoBtn" data-tag="{qrcode}">{qrcode}</button>
+                            </div>
+
+                            <div class="input-group input-group-sm mt-2">
+                                <input type="text" class="form-control" id="customTagInput" placeholder="Insira um placeholder tag personalizado. Ex: {exemplo}">
+                                <button class="btn btn-outline-secondary" type="button" id="addCustomTagBtn">+</button>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap btn-group propriedades-ordenacao mb-2">
+                            <button id="bringFront" class="btn btn-sm btn-primary d-flex gap-1 justify-content-center">
+                                <i class="bi bi-arrow-up"></i>Frente
+                            </button>
+                            <button id="sendBack" class="btn btn-sm btn-warning d-flex gap-1 justify-content-center">
+                                <i class="bi bi-arrow-down"></i>Trás
+                            </button>
+                            <button id="deleteEl" class="btn btn-sm btn-danger d-flex gap-1 justify-content-center">
+                                <i class="bi bi-trash"></i>Remover
+                            </button>
+                            <button id="copyEl" class="btn btn-sm btn-secondary d-flex gap-1 justify-content-center">
+                                <i class="bi bi-clipboard"></i>Copiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header bg-body fw-bold">Informações</div>
+                <div class="card-body">
+                    <div class="hint-box p-2 mb-2">
+                        <small>
+                            <strong>Uso rápido:</strong><br>
+                            - Clique em "Texto" para criar um bloco de texto editável.<br>
+                            - Carregue imagens e posicione com o mouse.<br>
+                        </small>
+                    </div>
+                    <div class="text-center">
+                        <small class="text-muted">Após salvar, use este modelo na página de <a
+                                href="/admin/certificados/listar-modelos">listagem de modelos de certificados</a>.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{baseUrlValidacao|raw}}
+<script src="/assets/js/admin/gerar-modelo.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tutorialModeloVisto = localStorage.getItem('tutorial_modelo_visto');
+    
+    function iniciarTutorialModelo() {
+        const driver = window.driver.js.driver;
+
+        function scrollToElement(selector) {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center'
+                });
+            }
+        }
+
+        let driverObj = driver({
+            popoverClass: 'bg-' + temaAlerta + ' text-body',
+            showProgress: true,
+            steps: [
+                {
+                    element: ".aba",
+                    popover: {
+                        title: 'Gerador de Modelos de Certificado <i class="bi bi-postcard"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Bem-vindo ao editor de modelos de certificados!</strong></p>
+                            <p>Aqui você pode criar layouts personalizados para seus certificados com textos dinâmicos, imagens, QR Codes e muito mais.</p>
+                            <p class="mb-0">Vamos explorar todas as funcionalidades disponíveis!</p>
+                        </div>
+                        `,
+                        side: "center",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#addTextBtn');
+                            document.getElementById('addTextBtn').click();
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#addTextBtn",
+                    popover: {
+                        title: 'Adicionar Texto <i class="bi bi-body-text"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Clique aqui para adicionar textos ao seu certificado.</strong></p>
+                            <p>Você pode criar:</p>
+                            <ul class="small">
+                                <li>Títulos e subtítulos</li>
+                                <li>Textos descritivos</li>
+                                <li>Campos dinâmicos (como nome, curso, etc.)</li>
+                                <li>Datas e assinaturas</li>
+                            </ul>
+                        </div>
+                        `,
+                        side: "bottom",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('.uploadImageBtn-container');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: ".uploadImageBtn-container",
+                    popover: {
+                        title: 'Adicionar Imagem <i class="bi bi-card-image"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Use este botão para inserir imagens no certificado.</strong></p>
+                            <p>Você pode adicionar:</p>
+                            <ul class="small">
+                                <li>Logotipos da instituição</li>
+                                <li>Selos oficiais</li>
+                                <li>Bordas decorativas</li>
+                                <li>Assinaturas digitalizadas</li>
+                            </ul>
+                            <p class="mb-0"><em>Formatos suportados: JPG, PNG, SVG</em></p>
+                        </div>
+                        `,
+                        side: "bottom",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#addTabelaConteudoBtn');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#addTabelaConteudoBtn",
+                    popover: {
+                        title: 'Tabela de Conteúdo <i class="bi bi-table"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Crie tabelas para organizar informações.</strong></p>
+                            <p>Ideal para:</p>
+                            <ul class="small">
+                                <li>Grades curriculares</li>
+                                <li>Lista de disciplinas</li>
+                                <li>Horários e cargas horárias</li>
+                                <li>Resultados e notas</li>
+                            </ul>
+                        </div>
+                        `,
+                        side: "bottom",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#addQRCodeBtn');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#addQRCodeBtn",
+                    popover: {
+                        title: 'QR Code de Validação <i class="bi bi-qr-code"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Adicione um QR Code para validação online.</strong></p>
+                            <p>Benefícios:</p>
+                            <ul class="small">
+                                <li>Validação instantânea do certificado</li>
+                                <li>Link direto para verificação</li>
+                                <li>Maior credibilidade e segurança</li>
+                                <li>Controle anti-fraude</li>
+                            </ul>
+                            <p class="mb-0"><em>Gera automaticamente um código único para cada certificado</em></p>
+                        </div>
+                        `,
+                        side: "bottom",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#addLinkValidacao');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#addLinkValidacao",
+                    popover: {
+                        title: 'Link de Validação <i class="bi bi-link"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Insira um link clicável para validação.</strong></p>
+                            <p>Alternativa ao QR Code:</p>
+                            <ul class="small">
+                                <li>URL direta de verificação</li>
+                                <li>Texto personalizável</li>
+                                <li>Ideal para certificados digitais</li>
+                                <li>Fácil acesso via computador</li>
+                            </ul>
+                            <p class="mb-0"><em>OBS: Não altere a placeholder tag {qrCode} que vem com o texto deste link.</em></p>
+                        </div>
+                        `,
+                        side: "bottom",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#addPageBtn');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#addPageBtn",
+                    popover: {
+                        title: 'Gerenciar Páginas <i class="bi bi-file"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Adicione múltiplas páginas ao certificado.</strong></p>
+                            <p>Use quando precisar de:</p>
+                            <ul class="small">
+                                <li>Certificados com anexos</li>
+                                <li>Grades curriculares extensas</li>
+                                <li>Documentação complementar</li>
+                                <li>Versões em múltiplos idiomas</li>
+                            </ul>
+                        </div>
+                        `,
+                        side: "bottom",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#modelName');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#modelName",
+                    popover: {
+                        title: 'Nome do Modelo <i class="bi bi-tag"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Dê um nome descritivo ao seu modelo.</strong></p>
+                            <p>Boas práticas:</p>
+                            <ul class="small">
+                                <li>Use nomes claros e objetivos</li>
+                                <li>Inclua versão ou data se necessário</li>
+                                <li>Ex: "Certificado Curso TI - 2024"</li>
+                                <li>Ex: "Modelo Workshop Presencial"</li>
+                            </ul>
+                            <p class="mb-0"><em>Este nome aparecerá na lista de modelos salvos</em></p>
+                        </div>
+                        `,
+                        side: "right",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#orientationSelect');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#orientationSelect",
+                    popover: {
+                        title: 'Orientação da Página <i class="bi bi-symmetry-horizontal"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Escolha entre retrato ou paisagem.</strong></p>
+                            <p><strong>Retrato (Vertical):</strong></p>
+                            <ul class="small">
+                                <li>Mais tradicional</li>
+                                <li>Ideal para textos longos</li>
+                                <li>Layout mais formal</li>
+                            </ul>
+                            <p><strong>Paisagem (Horizontal):</strong></p>
+                            <ul class="small">
+                                <li>Mais moderno</li>
+                                <li>Melhor para designs criativos</li>
+                                <li>Espaço para elementos laterais</li>
+                            </ul>
+                        </div>
+                        `,
+                        side: "right",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#backgroundInput');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#backgroundInput",
+                    popover: {
+                        title: 'Imagem de Fundo <i class="bi bi-file-earmark-image"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Adicione uma imagem de fundo personalizada.</strong></p>
+                            <p>Ideias criativas:</p>
+                            <ul class="small">
+                                <li>Texturas elegantes (papel pergaminho)</li>
+                                <li>Marca d'água institucional</li>
+                                <li>Padrões decorativos sutis</li>
+                                <li>Bordas artísticas</li>
+                            </ul>
+                            <p class="mb-0"><em>Dica: Use imagens de alta qualidade para melhor impressão</em></p>
+                        </div>
+                        `,
+                        side: "right",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#layersList');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#layersList",
+                    popover: {
+                        title: 'Gerenciador de Camadas <i class="bi bi-copy"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Controle todos os elementos do seu certificado.</strong></p>
+                            <p>Funcionalidades:</p>
+                            <ul class="small">
+                                <li>Veja todos os elementos em ordem</li>
+                                <li>Clique para selecionar rapidamente</li>
+                                <li>Identifique elementos pelo nome/tipo</li>
+                                <li>Controle a ordem de sobreposição</li>
+                            </ul>
+                            <p class="mb-0"><em>Elementos no topo da lista ficam na frente dos demais</em></p>
+                        </div>
+                        `,
+                        side: "right",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#stage');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#stage",
+                    popover: {
+                        title: 'Área de Edição Principal <i class="bi bi-filter-square"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Esta é a área onde você constrói seu certificado.</strong></p>
+                            <p>Aqui você pode:</p>
+                            <ul class="small">
+                                <li>Arrastar elementos para reposicionar</li>
+                                <li>Redimensionar com as alças laterais</li>
+                                <li>Clicar para selecionar e editar</li>
+                                <li>Ver o preview em tempo real</li>
+                            </ul>
+                            <p class="mb-0"><em>Tamanho real: A4 (210x297mm) - Visualização em escala</em></p>
+                        </div>
+                        `,
+                        side: "left",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('.properties-panel');
+                            driverObj.moveNext();
+                        }
+                    },
+                },
+                {
+                    element: ".properties-panel",
+                    popover: {
+                        title: 'Painel de Propriedades <i class="bi bi-gear-wide"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Personalize cada elemento do seu certificado.</strong></p>
+                            <p>Quando um elemento está selecionado, aqui você ajusta:</p>
+                            <ul class="small">
+                                <li>Posição e tamanho precisos</li>
+                                <li>Estilo de texto e fontes</li>
+                                <li>Cores e transparência</li>
+                                <li>Comportamento e conteúdo</li>
+                            </ul>
+                            <p class="mb-0"><em>Selecione um elemento para começar a personalizar!</em></p>
+                        </div>
+                        `,
+                        side: "left",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('.propriedades-texto');
+                            driverObj.moveNext();
+                        }
+                    },
+                },
+                {
+                    element: ".propriedades-texto",
+                    popover: {
+                        title: 'Editor de Texto Avançado <i class="bi bi-pencil-square"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Editor completo para formatação de texto.</strong></p>
+                            <p>Recursos disponíveis:</p>
+                            <ul class="small">
+                                <li>Negrito, itálico e sublinhado</li>
+                                <li>Diferentes tamanhos e cores</li>
+                                <li>Alinhamento e formatação</li>
+                                <li>Limpeza de formatação</li>
+                            </ul>
+                            <p class="mb-0"><em>Use para criar textos ricos e bem formatados</em></p>
+                        </div>
+                        `,
+                        side: "left",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('.propriedades-fonte');
+                            driverObj.moveNext();
+                        }
+                    },
+                },
+                {
+                    element: ".propriedades-fonte",
+                    popover: {
+                        title: 'Seleção de Fontes <i class="bi bi-fonts"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Escolha entre diversas fontes disponíveis.</strong></p>
+                            <p>Opções incluem:</p>
+                            <ul class="small">
+                                <li>Fontes web-safe (Arial, Times)</li>
+                                <li>Google Fonts populares</li>
+                                <li>Fontes decorativas e criativas</li>
+                                <li>Fontes técnicas e formais</li>
+                            </ul>
+                            <p class="mb-0"><em>+40 opções de fontes para personalizar seu design</em></p>
+                        </div>
+                        `,
+                        side: "left",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('.propriedades-placeholderTags');
+                            driverObj.moveNext();
+                        }
+                    },
+                },
+                {
+                    element: ".propriedades-placeholderTags",
+                    popover: {
+                        title: 'Campos Dinâmicos <i class="bi bi-view-stacked"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Crie campos que mudam automaticamente.</strong></p>
+                            <p>Tags pré-definidas:</p>
+                            <ul class="small">
+                                <li><code>{nome}</code>: Nome do participante</li>
+                                <li><code>{cpf}</code>: CPF</li>
+                                <li><code>{curso}</code>: Nome do curso</li>
+                                <li><code>{cargahoraria}</code>: Horas do curso</li>
+                            </ul>
+                            <p class="mb-0"><em>Digite no campo personalizado para criar novas tags</em></p>
+                        </div>
+                        `,
+                        side: "left",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('.propriedades-ordenacao');
+                            driverObj.moveNext();
+                        }
+                    },
+                },
+                {
+                    element: ".propriedades-ordenacao",
+                    popover: {
+                        title: 'Controle de Elementos <i class="bi bi-distribute-vertical"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Gerencie a ordem e organização dos elementos.</strong></p>
+                            <p>Funcionalidades:</p>
+                            <ul class="small">
+                                <li><strong>Frente/Trás:</strong> Controle sobreposição</li>
+                                <li><strong>Remover:</strong> Delete elementos</li>
+                                <li><strong>Copiar:</strong> Duplique elementos</li>
+                            </ul>
+                            <p class="mb-0"><em>Use para organizar seu layout de forma eficiente</em></p>
+                        </div>
+                        `,
+                        side: "left",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#saveModelBtn');
+                            driverObj.moveNext();
+                        }
+                    },
+                },
+                {
+                    element: "#saveModelBtn",
+                    popover: {
+                        title: 'Salvar Modelo <i class="bi bi-floppy"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Salve seu trabalho para usar depois!</strong></p>
+                            <p>Após salvar, você pode:</p>
+                            <ul class="small">
+                                <li>Reutilizar o modelo infinitas vezes</li>
+                                <li>Gerar certificados em massa</li>
+                                <li>Editar e melhorar posteriormente</li>
+                                <li>Compartilhar entre usuários</li>
+                            </ul>
+                            <p class="mb-0"><em>Não esqueça de salvar seu progresso!</em></p>
+                        </div>
+                        `,
+                        side: "bottom",
+                        align: "start",
+                        onNextClick: () => {
+                            localStorage.setItem('tutorial_modelo_visto', 'true');
+                            driverObj.destroy();
+                        },
+                    },
+                }
+            ],
+            onDestroyed: () => {
+                localStorage.setItem('tutorial_modelo_visto', 'true');
+            }
+        });
+
+        driverObj.drive();
+    }
+
+    if (!tutorialModeloVisto) {
+        setTimeout(() => {
+            iniciarTutorialModelo();
+        }, 300);
+    }
+
+    const botaoTourModelo = document.createElement('button');
+    botaoTourModelo.className = 'btn btn-warning position-fixed';
+    botaoTourModelo.style.cssText = 'position: fixed; bottom: 7px; right: 70px; z-index: 999999;';
+    botaoTourModelo.innerHTML = '<i class="bi bi-card-checklist"></i> Tour do Gerador de Modelo';
+    botaoTourModelo.addEventListener('click', iniciarTutorialModelo);
+    
+    document.body.appendChild(botaoTourModelo);
+});
+</script>
+{% endblock %}

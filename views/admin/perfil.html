@@ -1,0 +1,260 @@
+{% extends '/admin/base/base.html' %} {% block conteudo %}
+<div class="app-content-body">
+  <div class="container-xl fade-in mb-4" style="min-height: 100vh">
+  <div class="row d-flex rounded p-2 bg-body border flex-wrap mx-2">
+    <div class="col-md-12 mb-4">
+      {% if aviso is not empty %}
+      <p class="alert alert-{{tipo_aviso}}">{{aviso}}</p>
+      {% endif %}
+      <form
+        id="formPerfil"
+        name="formPerfil"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+        <div class="card-body">
+          <div class="row g-3 mb-4">
+            <div
+              class="col-md-12 d-flex flex-column justify-content-center align-items-center gap-2"
+            >
+              <div
+                class="d-flex hover pointer justify-content-center rounded-circle"
+                style="position: relative; overflow: hidden"
+                id="imgPerfilContainer"
+              >
+                <img
+                  id="imgPerfil"
+                  class="img-perfil user-image rounded-circle border"
+                  src="{{usuario.img ? 'data:image/png;base64,' ~ usuario.img : '/assets/img/favicon2.png'}}"
+                  width="125"
+                  height="125"
+                  alt="Imagem de Perfil"
+                  title="Clique para mudar sua imagem de perfil"
+                />
+                <div
+                  id="imgPerfilTexto"
+                  class="d-flex flex-column align-items-center d-none"
+                  style="position: absolute; top: 40px"
+                >
+                  <i class="bi bi-camera-fill text-white"></i>
+                  <p class="m-0 text-white">Mudar Imagem</p>
+                </div>
+              </div>
+              <input
+                type="file"
+                hidden
+                id="inputImagemPerfil"
+                name="inputImagemPerfil"
+                accept="image/png, image/jpeg"
+                disabled
+              />
+              <p class="text-center mb-0 fw-bold">
+                {{capitalizarPalavras(usuario.nome)}}
+              </p>
+            </div>
+            <div class="form-group required col-md-6">
+              <label for="inputNome" class="form-label">Nome</label>
+              <input
+                type="text"
+                class="form-control"
+                name="inputNome"
+                id="inputNome"
+                value="{{ campos.inputNome is defined and campos.inputNome is not empty ? campos.inputNome : capitalizarPalavras(usuario.nome) }}"
+                required
+                minlength="3"
+                maxlength="255"
+              />
+            </div>
+            <div class="form-group required col-md-6">
+              <label for="inputEmail" class="form-label">Email</label>
+              <input
+                type="text"
+                class="form-control"
+                name="inputEmail"
+                id="inputEmail"
+                value="{{usuario.email }}"
+                disabled
+                readonly
+              />
+            </div>
+
+            <div class="form-group required col-md-6">
+              <label for="inputTelefone" class="form-label">Telefone</label>
+              <input
+                type="tel"
+                class="form-control"
+                name="inputTelefone"
+                id="inputTelefone"
+                value="{{ campos.inputTelefone is defined and campos.inputTelefone is not empty ? campos.inputTelefone : usuario.telefone }}"
+                required
+              />
+            </div>
+            <div class="form-group required col-md-6">
+              <label for="inputDataNasc" class="form-label"
+                >Data de Nascimento</label
+              >
+
+              <input
+                type="date"
+                class="form-control"
+                name="inputDataNasc"
+                id="inputDataNasc"
+                value="{{ campos.inputDataNasc is defined and campos.inputDataNasc is not empty ? campos.inputDataNasc : usuario.datanasc }}"
+                required
+              />
+            </div>
+            <div class="form-group required col-md-6">
+              <label for="inputTipoCadastro" class="form-label"
+                >Tipo de Cadastro</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                name="inputTipoCadastro"
+                id="inputTipoCadastro"
+                value="{{capitalizarPalavras(usuario.perfil)}} {{capitalizarPalavras(usuario.tipoCadastro)}}"
+                disabled
+                readonly
+              />
+            </div>
+            <div class="form-group required col-md-6">
+              <label for="inputRegistradoEm" class="form-label"
+                >Registrado em</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                name="inputRegistradoEm"
+                id="inputRegistradoEm"
+                value="{{formatarDataEstrangeira(usuario.criadoEm)}}"
+                readonly
+                disabled
+              />
+            </div>
+            <div class="form-group required col-md-6">
+              <label for="inputEditadoEm" class="form-label">Editado em</label>
+              <input
+                type="text"
+                class="form-control"
+                name="inputEditadoEm"
+                id="inputEditadoEm"
+                value="{{usuario.editadoEm ? formatarDataEstrangeira(usuario.editadoEm) : 'Nunca'}}"
+                readonly
+                disabled
+              />
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-body">
+          <button class="btn btn-primary" id="btnEnviar" type="submit">
+            <i class="bi bi-check2-square"></i> Confirmar Alterações
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+</div>
+<script>
+  const formPerfil = document.getElementById("formPerfil");
+  const imgPerfilContainer = document.getElementById("imgPerfilContainer");
+  const inputImagemPerfil = document.getElementById("inputImagemPerfil");
+  const imgPerfil = document.getElementById("imgPerfil");
+  const inputNome = document.getElementById("inputNome");
+  const inputEmail = document.getElementById("inputEmail");
+  const inputTelefone = document.getElementById("inputTelefone");
+  const btnEnviar = document.getElementById("btnEnviar");
+
+  inputTelefone.addEventListener("input", (e) => {
+    e.target.value = Helpers.mascaraTelefone(e.target.value);
+  });
+
+
+  inputNome.addEventListener("input", (e) => {
+    e.target.value = Helpers.removerNumeros(e.target.value);
+  });
+
+  imgPerfilContainer.addEventListener("mouseover", function () {
+    document.getElementById("imgPerfilTexto").classList.remove("d-none");
+    document.getElementById("imgPerfil").style.filter = "brightness(0.4)";
+    document.getElementById("imgPerfil").style.cursor = "pointer";
+    document.getElementById("imgPerfilTexto").style.cursor = "pointer";
+  });
+
+  imgPerfilContainer.addEventListener("mouseout", function () {
+    document.getElementById("imgPerfilTexto").classList.add("d-none");
+    document.getElementById("imgPerfil").style.filter = "brightness(1)";
+    document.getElementById("imgPerfil").style.cursor = "default";
+    document.getElementById("imgPerfilTexto").style.cursor = "default";
+  });
+
+  imgPerfilContainer.addEventListener("click", function () {
+    inputImagemPerfil.value = ""; 
+    inputImagemPerfil.disabled = false;
+
+    let changeDisparado = false;
+
+    const onChange = () => {
+      changeDisparado = true;
+      const arr_imgs = ["image/png", "image/jpeg"];
+      const file = inputImagemPerfil.files[0];
+
+      if (!file) return;
+
+      if (!arr_imgs.includes(file.type)) {
+        Swal.fire({
+          icon: "error",
+          title: "Erro!",
+          text: "O formato de imagem deve ser PNG ou JPEG.",
+          confirmButtonColor: "green",
+          confirmButtonText: "Ok",
+          theme: `${tema_salvo}`,
+        });
+        inputImagemPerfil.disabled = true;
+      } else if (file.size > 5000000) {
+        Swal.fire({
+          icon: "error",
+          title: "Erro!",
+          text: "A imagem deve ter no máximo 5MB.",
+          confirmButtonColor: "green",
+          confirmButtonText: "Ok",
+          theme: `${tema_salvo}`,
+        });
+        inputImagemPerfil.disabled = true;
+      } else {
+        const reader = new FileReader();
+        reader.onload = () => {
+          imgPerfil.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      window.removeEventListener("focus", onFocus);
+      inputImagemPerfil.removeEventListener("change", onChange);
+    };
+
+    const onFocus = () => {
+      setTimeout(() => {
+        if (!changeDisparado) {
+          inputImagemPerfil.disabled = true;
+        }
+        window.removeEventListener("focus", onFocus);
+        inputImagemPerfil.removeEventListener("change", onChange);
+      }, 300);
+    };
+
+    inputImagemPerfil.addEventListener("change", onChange);
+    window.addEventListener("focus", onFocus);
+
+    inputImagemPerfil.click();
+  });
+
+  formPerfil.addEventListener("submit", function (e) {
+    e.preventDefault();
+    btnEnviar.disabled = true;
+    btnEnviar.innerHTML =
+      "<i style='vertical-align:sub' class='bx bx-loader-dots bx-spin'></i> Confirmando";
+    e.target.submit();
+  });
+</script>
+{% endblock %}

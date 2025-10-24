@@ -1,0 +1,64 @@
+{% extends 'base/base.html' %} {% block conteudo %} {% if aviso is not empty %}
+<p class="alert alert-{{tipo_aviso}} mx-4">{{aviso}}</p>
+{% endif %}
+
+<div class="container mt-5 mb-4" style="min-height: 100vh">
+  <div class="row bg-body border p-2 mx-2 rounded">
+    <div class="col-md-6 d-none d-md-block">
+      <img
+        src="/assets/img/senha.png"
+        alt="Image"
+        class="img-fluid opacity-75"
+      />
+    </div>
+    <div class="col-md-6 mt-4 d-flex align-items-center justify-content-center">
+      <div class="row justify-content-center">
+        <div class="col-md-10">
+          <div class="mb-4">
+            <h3>
+              Redefinir sua senha em <strong>{{constant('SITE_NOME')}}</strong>
+            </h3>
+            <p class="mb-4">
+              Digite seu email abaixo para redefinir sua senha.
+            </p>
+          </div>
+          <form method="post">
+            <div class="form-control mb-2 p-3">
+              <div class="form-group required mb-3">
+                <label class="form-label" for="inputEmail">Email</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="inputEmail"
+                  name="inputEmail"
+                  placeholder="exemplo@email.com"
+                  required
+                  value="{{campos.inputEmail}}"
+                />
+              </div>
+              <button type="submit" id="btnRedefinir" class="btn btn-dark">
+                Confirmar <i class="bi bi-check2-circle"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<a href="https://storyset.com/online" hidden
+  >Online illustrations by Storyset</a
+>
+
+<script>
+  document.querySelector("form").addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    document.getElementById("btnRedefinir").disabled = true;
+    document.getElementById("btnRedefinir").innerHTML =
+      'Enviando Email <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ';
+
+    this.submit();
+  });
+</script>
+{% endblock %}

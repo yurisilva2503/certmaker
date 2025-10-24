@@ -1,0 +1,77 @@
+{% extends 'base/base.html' %} {% block conteudo %} {% if aviso is not empty %}
+<p class="alert alert-{{tipo_aviso}} mx-4">{{aviso}}</p>
+{% endif %}
+
+<div class="container mt-5 mb-4" style="min-height: 100vh">
+  <div class="row bg-body border p-2 mx-2 rounded">
+    <div class="col-md-6 d-none d-md-block">
+      <img
+        src="/assets/img/login.png"
+        alt="Image"
+        class="img-fluid opacity-75"
+      />
+    </div>
+    <div class="col-md-6 mt-4 d-flex align-items-center justify-content-center">
+      <div class="row justify-content-center w-100">
+        <div class="col-md-8">
+          <div class="mb-4">
+            <h3>Entrar em <strong>{{constant('SITE_NOME')}}</strong></h3>
+            <p class="mb-4">
+              Ainda nao possui uma conta?
+              <a
+                class="link-offset-2 link-underline link-underline-opacity-0"
+                href="/registrar"
+                >Registre-se</a
+              >
+            </p>
+          </div>
+          <form method="POST">
+            <div class="form-control mb-2 p-3">
+              <div class="form-group required mb-2">
+                <label class="form-label " for="inputEmail">Email</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="inputEmail"
+                  name="inputEmail"
+                  placeholder="exemplo@email.com"
+                  value="{{campos.inputEmail}}"
+                  required
+                />
+              </div>
+              <div class="form-group required mb-1">
+                <label class="form-label" for="inputSenha">Senha</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="inputSenha"
+                  name="inputSenha"
+                  placeholder="********"
+                  required
+                  minlength="8"
+                  maxlength="255"
+                  value="{{campos.inputSenha}}"
+                />
+              </div>
+              <div class="mb-3">
+                <span class="ml-auto d-flex gap-1"
+                  ><a href="/redefinir-senha" class="link text-muted d-flex gap-1"
+                    ><i class="bi bi-key"></i>Esqueci minha senha</a
+                  ></span
+                >
+              </div>
+              <button type="submit" class="btn btn-dark">
+                Entrar <i class="bi bi-box-arrow-in-right"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="https://storyset.com/online" hidden
+  >Online illustrations by Storyset</a
+>
+{% endblock %}

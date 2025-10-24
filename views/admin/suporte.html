@@ -1,0 +1,533 @@
+{% extends '/admin/base/base.html' %} 
+
+{% block conteudo %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<div class="app-content-body">
+  <div class="container-xxl mb-4" style="min-height: 100vh">
+    <div class="row d-flex rounded flex-wrap">
+      <div class="col-md-12 mb-4">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h4 class="card-title mb-0">
+              <i class="bi bi-question-circle me-2"></i>Central de Suporte
+            </h4>
+          </div>
+          
+          {% if aviso is not empty %}
+          <div class="alert alert-{{tipo_aviso}} m-3 mb-0">
+            {{aviso}}
+          </div>
+          {% endif %}
+          
+          <div class="card-body">
+            <p class="text-muted mb-4">
+              Envie suas dúvidas, problemas ou sugestões para nossa equipe de suporte. 
+              Responderemos o mais breve possível.
+            </p>
+            
+            <form
+              id="formSuporte"
+              name="formSuporte"
+              method="POST"
+              action="/admin/suporte"
+            >
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="assunto" class="form-label">
+                      <strong>Assunto</strong><span class="text-danger">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="assunto"
+                      name="assunto"
+                      placeholder="Ex: Problema com geração de certificados"
+                      required
+                      maxlength="100"
+                    />
+                    <div class="form-text">Descreva brevemente o assunto</div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="prioridade" class="form-label">
+                      <strong>Prioridade</strong>
+                    </label>
+                    <select class="form-select" id="prioridade" name="prioridade">
+                      <option value="baixa">Baixa</option>
+                      <option value="normal" selected>Normal</option>
+                      <option value="alta">Alta (Urgente)</option>
+                    </select>
+                    <div class="form-text">Selecione a urgência do seu atendimento</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="tipo_contato" class="form-label">
+                  <strong>Tipo de Contato</strong>
+                </label>
+                <select class="form-select" id="tipo_contato" name="tipo_contato">
+                  <option value="duvida">Dúvida</option>
+                  <option value="problema" selected>Problema Técnico</option>
+                  <option value="sugestao">Sugestão</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label for="mensagem" class="form-label">
+                  <strong>Mensagem</strong><span class="text-danger">*</span>
+                </label>
+                <textarea
+                  class="form-control"
+                  id="mensagem"
+                  name="mensagem"
+                  rows="8"
+                  placeholder="Descreva detalhadamente sua dúvida, problema ou sugestão..."
+                  required
+                  minlength="10"
+                  maxlength="2000"
+                ></textarea>
+                <div class="form-text">
+                  Mínimo 10 caracteres. Descreva com detalhes para melhor atendimento.
+                  <span id="contadorCaracteres" class="float-end">0/2000</span>
+                </div>
+              </div>
+              
+              <div class="alert alert-warning">
+                <h6 class="alert-heading">
+                  <i class="bis bi-info-circle me-2"></i>Informações de Contato
+                </h6>
+                <p class="mb-0">
+                  <strong>Email:</strong> {{ usuario.getEmail() }} | 
+                  <strong>Telefone:</strong> {{ usuario.getTelefone() }}
+                  <br>
+                  Suas informações de contato serão enviadas automaticamente com a mensagem.
+                </p>
+              </div>
+              
+              <div class="card-footer bg-body border-0 px-0">
+                <button class="btn btn-primary" id="btnEnviar" type="submit">
+                  <i class="bi bi-send"></i> Enviar Mensagem
+                </button>
+                <button type="reset" class="btn btn-outline-secondary ms-2">
+                  <i class="bi bi-eraser"></i> Limpar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <!-- Informações de Contato Adicionais -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-info-circle me-2"></i>Tempos de Resposta
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row text-center">
+              <div class="col-md-4">
+                <div class="border rounded p-3">
+                  <h6 class="text-primary">Prioridade Alta</h6>
+                  <p class="mb-0">Até 4 horas</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="border rounded p-3">
+                  <h6 class="text-info">Prioridade Normal</h6>
+                  <p class="mb-0">Até 24 horas</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="border rounded p-3">
+                  <h6 class="text-success">Prioridade Baixa</h6>
+                  <p class="mb-0">Até 48 horas</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const mensagem = document.getElementById('mensagem');
+  const contador = document.getElementById('contadorCaracteres');
+  
+  mensagem.addEventListener('input', function() {
+    const caracteres = this.value.length;
+    contador.textContent = `${caracteres}/2000`;
+    
+    if (caracteres < 10) {
+      contador.classList.add('text-danger');
+      contador.classList.remove('text-success');
+    } else {
+      contador.classList.remove('text-danger');
+      contador.classList.add('text-success');
+    }
+  });
+  
+  document.getElementById('formSuporte').addEventListener('submit', function(e) {
+    const assunto = document.getElementById('assunto').value.trim();
+    const mensagem = document.getElementById('mensagem').value.trim();
+    
+    if (assunto.length === 0) {
+      e.preventDefault();
+      Swal.fire({
+                icon: "warning",
+                title: "Atenção",   
+                text: `Por favor, preencha o assunto.`,
+                confirmButtonText: "OK",
+                confirmButtonColor: "green",
+                theme: `${temaAlerta}`,
+            })
+      return;
+    }
+    
+    if (mensagem.length < 10) {
+      e.preventDefault();
+      Swal.fire({
+                icon: "warning",
+                title: "Atenção",   
+                text: `A mensagem deve ter pelo menos 10 caracteres.`,
+                confirmButtonText: "OK",
+                confirmButtonColor: "green",
+                theme: `${temaAlerta}`,
+            })
+      return;
+    }
+    
+    const btnEnviar = document.getElementById('btnEnviar');
+    btnEnviar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...';
+    btnEnviar.disabled = true;
+  });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tutorialSuporteVisto = localStorage.getItem('tutorial_suporte_visto');
+    
+    function iniciarTutorialSuporte() {
+        const driver = window.driver.js.driver;
+
+        function scrollToElement(selector) {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center'
+                });
+            }
+        }
+
+        let driverObj = driver({
+            popoverClass: 'bg-' + temaAlerta + ' text-body',
+            showProgress: true,
+            steps: [
+                {
+                    element: ".card-header.bg-primary",
+                    popover: {
+                        title: 'Central de Suporte <i class="bi bi-question-circle"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Bem-vindo à Central de Suporte!</strong></p>
+                            <p>Aqui você pode entrar em contato com nossa equipe para:</p>
+                            <ul class="small">
+                                <li>Resolver problemas técnicos</li>
+                                <li>Tirar dúvidas sobre o sistema</li>
+                                <li>Enviar sugestões de melhoria</li>
+                                <li>Reportar bugs ou dificuldades</li>
+                            </ul>
+                            <p class="mb-0">Vamos conhecer todas as opções disponíveis!</p>
+                        </div>
+                        `,
+                        side: "bottom",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#assunto');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#assunto",
+                    popover: {
+                        title: 'Assunto da Mensagem <i class="bi bi-question-circle"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Defina um assunto claro para sua mensagem.</strong></p>
+                            <p>Exemplos bons:</p>
+                            <ul class="small">
+                                <li>"Problema ao gerar certificados em lote"</li>
+                                <li>"Dúvida sobre modelos personalizados"</li>
+                                <li>"Sugestão para nova funcionalidade"</li>
+                                <li>"Erro ao fazer upload de imagens"</li>
+                            </ul>
+                            <p class="mb-0"><em>Campo obrigatório - máximo 100 caracteres</em></p>
+                        </div>
+                        `,
+                        side: "right",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#prioridade');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#prioridade",
+                    popover: {
+                        title: 'Nível de Prioridade <i class="bi bi-question-circle"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Selecione a urgência do seu atendimento.</strong></p>
+                            <p><span class="badge bg-success">Baixa</span>: Dúvidas gerais, sugestões</p>
+                            <p><span class="badge bg-info">Normal</span>: Problemas não críticos</p>
+                            <p><span class="badge bg-danger">Alta</span>: Sistema inacessível, erros graves</p>
+                            <p class="mb-0"><em>Use "Alta" apenas para situações realmente urgentes</em></p>
+                        </div>
+                        `,
+                        side: "right",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#tipo_contato');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#tipo_contato",
+                    popover: {
+                        title: 'Tipo de Contato <i class="bi bi-question-circle"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Classifique o tipo da sua solicitação.</strong></p>
+                            <p>Opções disponíveis:</p>
+                            <ul class="small">
+                                <li><strong>Dúvida:</strong> Perguntas sobre uso do sistema</li>
+                                <li><strong>Problema Técnico:</strong> Bugs, erros, falhas</li>
+                                <li><strong>Sugestão:</strong> Ideias para melhorias</li>
+                                <li><strong>Outro:</strong> Demais assuntos</li>
+                            </ul>
+                        </div>
+                        `,
+                        side: "right",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#mensagem');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#mensagem",
+                    popover: {
+                        title: 'Mensagem Detalhada <i class="bi bi-question-circle"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Descreva detalhadamente sua solicitação.</strong></p>
+                            <p>Para melhor atendimento, inclua:</p>
+                            <ul class="small">
+                                <li>Passos para reproduzir o problema</li>
+                                <li>Mensagens de erro exatas</li>
+                                <li>Data e hora do ocorrido</li>
+                                <li>O que você tentou fazer para resolver</li>
+                            </ul>
+                            <p class="mb-0"><em>Mínimo 10 caracteres - Contador ajuda no controle</em></p>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('.alert-info');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: ".alert-info",
+                    popover: {
+                        title: 'Informações de Contato <i class="bi bi-info-circle"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Seus dados serão enviados automaticamente.</strong></p>
+                            <p>Informações incluídas:</p>
+                            <ul class="small">
+                                <li>Email cadastrado</li>
+                                <li>Telefone (se disponível)</li>
+                                <li>Nome do usuário</li>
+                                <li>Data e hora do envio</li>
+                            </ul>
+                            <p class="mb-0"><em>Responderemos diretamente no email cadastrado</em></p>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#btnEnviar');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#btnEnviar",
+                    popover: {
+                        title: 'Enviar Mensagem <i class="bi bi-send"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Envie sua solicitação para nossa equipe.</strong></p>
+                            <p>Após clicar:</p>
+                            <ul class="small">
+                                <li>O botão mostrará um indicador de carregamento</li>
+                                <li>Sua mensagem será enviada imediatamente</li>
+                                <li>Você receberá uma confirmação por email</li>
+                                <li>Nossa equipe entrará em contato em breve</li>
+                            </ul>
+                            <p class="mb-0"><em>Use "Limpar" para recomeçar o formulário</em></p>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('.card.mt-4 .card-header');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: ".card.mt-4 .card-header",
+                    popover: {
+                        title: 'Tempos de Resposta <i class="bi bi-info-circle"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Previsão de retorno da nossa equipe.</strong></p>
+                            <p>Nossos compromissos:</p>
+                            <ul class="small">
+                                <li><span class="text-danger">Alta:</span> Até 4 horas úteis</li>
+                                <li><span class="text-info">Normal:</span> Até 24 horas úteis</li>
+                                <li><span class="text-success">Baixa:</span> Até 48 horas úteis</li>
+                            </ul>
+                            <p class="mb-0"><em>Horário comercial: Segunda a Sexta, 8h às 18h</em></p>
+                        </div>
+                        `,
+                        side: "bottom",
+                        align: "start",
+                        onNextClick: () => {
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: ".aba",
+                    popover: {
+                        title: 'Tutorial Concluído! <i class="bi bi-check-circle"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Você conheceu todas as funcionalidades da Central de Suporte!</strong></p>
+                            <p>Agora você pode:</p>
+                            <ul class="small">
+                                <li>Enviar solicitações de suporte detalhadas</li>
+                                <li>Classificar corretamente a urgência</li>
+                                <li>Acompanhar os prazos de resposta</li>
+                                <li>Comunicar-se eficientemente com nossa equipe</li>
+                            </ul>
+                            <p class="mb-0">Estamos aqui para ajudar! Qualquer dúvida, não hesite em entrar em contato.</p>
+                        </div>
+                        `,
+                        side: "center",
+                        align: "start",
+                        onNextClick: () => { 
+                            localStorage.setItem('tutorial_suporte_visto', 'true');
+                            driverObj.destroy();  
+                        },
+                    },
+                }
+            ],
+            onDestroyed: () => {
+                localStorage.setItem('tutorial_suporte_visto', 'true');
+            }
+        });
+
+        driverObj.drive();
+    }
+
+    if (!tutorialSuporteVisto) {
+        setTimeout(() => {
+            iniciarTutorialSuporte();
+        }, 300);
+    }
+
+    const botaoTourSuporte = document.createElement('button');
+    botaoTourSuporte.className = 'btn btn-warning position-fixed';
+    botaoTourSuporte.style.cssText = 'position: fixed; bottom: 7px; right: 70px; z-index: 999999;';
+    botaoTourSuporte.innerHTML = '<i class="bi bi-person-vcard"></i> Tour do Suporte';
+    botaoTourSuporte.addEventListener('click', iniciarTutorialSuporte);
+    
+    document.body.appendChild(botaoTourSuporte);
+
+    const mensagem = document.getElementById('mensagem');
+    const contador = document.getElementById('contadorCaracteres');
+    
+    if (mensagem && contador) {
+        mensagem.addEventListener('input', function() {
+            const caracteres = this.value.length;
+            contador.textContent = `${caracteres}/2000`;
+            
+            if (caracteres < 10) {
+                contador.classList.add('text-danger');
+                contador.classList.remove('text-success');
+            } else {
+                contador.classList.remove('text-danger');
+                contador.classList.add('text-success');
+            }
+        });
+    }
+    
+    const formSuporte = document.getElementById('formSuporte');
+    if (formSuporte) {
+        formSuporte.addEventListener('submit', function(e) {
+            const assunto = document.getElementById('assunto').value.trim();
+            const mensagem = document.getElementById('mensagem').value.trim();
+            
+            if (assunto.length === 0) {
+                e.preventDefault();
+                Swal.fire({
+                icon: "warning",
+                title: "Atenção",   
+                text: `Por favor, preencha o assunto.`,
+                confirmButtonText: "OK",
+                confirmButtonColor: "green",
+                theme: `${temaAlerta}`,
+            })
+                return;
+            }
+            
+            if (mensagem.length < 10) {
+                e.preventDefault();
+                Swal.fire({
+                icon: "warning",
+                title: "Atenção",   
+                text: `A mensagem deve ter pelo menos 10 caracteres.`,
+                confirmButtonText: "OK",
+                confirmButtonColor: "green",
+                theme: `${temaAlerta}`,
+            })
+                return;
+            }
+            
+            const btnEnviar = document.getElementById('btnEnviar');
+            btnEnviar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...';
+            btnEnviar.disabled = true;
+        });
+    }
+});
+</script>
+{% endblock %}

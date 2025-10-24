@@ -1,0 +1,754 @@
+{% extends '/admin/base/base.html' %} {% block conteudo %}
+<link
+    href="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.2/b-3.2.4/b-colvis-3.2.4/b-html5-3.2.4/b-print-3.2.4/r-3.0.5/datatables.min.css"
+    rel="stylesheet" integrity="sha384-kF7pDsQNJ594osO3qa/uBV3zmWK1GkBv6q8vmvgMuqR8O2uChR8ziL8phUE7tfE0"
+    crossorigin="anonymous">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"
+    integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7"
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"
+    integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n"
+    crossorigin="anonymous"></script>
+<script
+    src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.2/b-3.2.4/b-colvis-3.2.4/b-html5-3.2.4/b-print-3.2.4/r-3.0.5/datatables.min.js"
+    integrity="sha384-/ElAk7FHyIpqPv8ADuOBupFPeZcP6fOn9hNzQH3T2NHSaPI0RpSOJHFAXySCFyq/"
+    crossorigin="anonymous"></script>
+<style>
+    .buttons-copy {
+        --bs-btn-color: #fff;
+        --bs-btn-bg: #0d6efd;
+        --bs-btn-border-color: #0d6efd;
+        --bs-btn-hover-color: #fff;
+        --bs-btn-hover-bg: #0b5ed7;
+        --bs-btn-hover-border-color: #0a58ca;
+        --bs-btn-focus-shadow-rgb: 49, 132, 253;
+        --bs-btn-active-color: #fff;
+        --bs-btn-active-bg: #0a58ca;
+        --bs-btn-active-border-color: #0a53be;
+        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        --bs-btn-disabled-color: #fff;
+        --bs-btn-disabled-bg: #0d6efd;
+        --bs-btn-disabled-border-color: #0d6efd;
+    }
+    .buttons-print {
+        --bs-btn-color: #000;
+        --bs-btn-bg: #ffc107;
+        --bs-btn-border-color: #ffc107;
+        --bs-btn-hover-color: #000;
+        --bs-btn-hover-bg: #ffca2c;
+        --bs-btn-hover-border-color: #ffc720;
+        --bs-btn-focus-shadow-rgb: 217, 164, 6;
+        --bs-btn-active-color: #000;
+        --bs-btn-active-bg: #ffcd39;
+        --bs-btn-active-border-color: #ffc720;
+        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        --bs-btn-disabled-color: #000;
+        --bs-btn-disabled-bg: #ffc107;
+        --bs-btn-disabled-border-color: #ffc107;
+    }
+    .buttons-pdf {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #dc3545;
+    --bs-btn-border-color: #dc3545;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #bb2d3b;
+    --bs-btn-hover-border-color: #b02a37;
+    --bs-btn-focus-shadow-rgb: 225, 83, 97;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #b02a37;
+    --bs-btn-active-border-color: #a52834;
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: #dc3545;
+    --bs-btn-disabled-border-color: #dc3545;
+    }
+    .dropdown-toggle::after {
+        display: none;
+    }
+</style>
+<div class="app-content-body">
+  <div class="container-xl  mt-2 fade-in mb-4" style="min-height: 100vh">
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card card-primary card-outline mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% if aviso is not empty %}
+                        <p class="alert alert-{{tipo_aviso}}">{{aviso}}</p>
+                        {% endif %}
+                        <div class="col-md-12">
+                            <table id="tabelaModelos" class="table table-striped"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+{{modelos|raw}}
+
+<script>
+    console.log(modelos)
+    $("#tabelaModelos").DataTable({
+        ordering: false,
+        processing: true, // 🔹 mostra o "Carregando..." automaticamente
+        paging: true,
+        data: modelos,
+        pageLength: 10,
+        responsive: true,
+        lengthChange: false,
+        searching: true,
+        info: true,
+        columns: [
+    { 
+        data: "background", 
+        title: "Fundo", 
+        className: "desktop", 
+        render: function (data, type, row) {
+            let bg = row.background;
+
+            if (!bg && row.paginas) {
+                let paginas = row.paginas;
+                try {
+                    if (typeof paginas === "string") {
+                        paginas = JSON.parse(paginas);
+                    }
+                    if (Array.isArray(paginas) && paginas.length > 0 && paginas[0].background) {
+                        bg = paginas[0].background;
+                    }
+                } catch(e) {
+                    console.error("Erro ao processar paginas:", e);
+                }
+            }
+
+            if (bg) {
+                return '<img src="' + bg + '" class="img-fluid" style="max-width: 100px; max-height: 100px;"/>';
+            } else {
+                return '#';
+            }
+        }
+    },
+    { data: "nome", title: "Nome", className: "all" },
+    { 
+        data: "orientacao", 
+        title: "Orientação",  
+        className: "desktop", 
+        render: function (data, type, row) {
+            if (row.orientacao.toLowerCase() == 'landscape') {
+                return '<p class="m-0 badge bg-primary">Paisagem</p>';
+            } else {
+                return '<p class="m-0 badge bg-warning">Retrato</p>';
+            }
+        }
+    },
+    { data: "criado_em", title: "Criado em", className: "desktop" },
+    { 
+        data: "atualizado_em", 
+        title: "Atualizado em", 
+        className: "desktop", 
+        render: function (data, type, row) {
+            return row.atualizado_em ? row.atualizado_em : '#';
+        }
+    },
+    { 
+        data: "paginas", 
+        title: "Qtd. de Páginas", 
+        className: "desktop", 
+        render: function(data, type, row) {
+            if (!data) return 0;
+
+            let paginas = data;
+            try {
+                if (typeof paginas === "string") {
+                    paginas = JSON.parse(paginas);
+                }
+                return Array.isArray(paginas) ? paginas.length : 0;
+            } catch(e) {
+                console.error("Erro ao processar paginas:", e);
+                return 0;
+            }
+        }
+    },
+    {
+    data: null,
+    title: "Ações",
+    orderable: false,
+    searchable: false,
+    className: "text-center",
+    render: function (data, type, row) {
+        return `
+        <div class="dropdown">
+            <button class="btn shadow-none dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-three-dots-vertical"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a class="dropdown-item" onclick="editarModeloCertificado('${row.id}')" href="#">
+                        <i class="bi bi-eye me-2"></i>Ver / Editar
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="/admin/certificados/gerar/${row.id}">
+                        <i class="bi bi-card-list me-2"></i>Gerar Certificados
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item text-info" href="#" onclick="copiarModelo('${row.id}', '${row.nome.replace(/'/g, "\\'")}')">
+                        <i class="bi bi-copy me-2"></i>Copiar Modelo
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item text-danger" href="#" onclick="excluirModeloCertificado('${row.id}')">
+                        <i class="bi bi-trash me-2"></i>Excluir
+                    </a>
+                </li>
+            </ul>
+        </div>`;
+    }
+}
+],
+
+        language: {
+            url: '//cdn.datatables.net/plug-ins/2.3.2/i18n/pt-BR.json',
+            paginate: {
+                first: "<<",
+                last: ">>",
+                next: ">",
+                previous: "<"
+            },
+        },
+        dom: "Bfrtip",
+        buttons: [
+            {
+                extend: "copy",
+                text: "Copiar",
+                title: "{{constant('SITE_NOME')}} - Listagem de Modelos de Certificados",
+                className: "btn btn-sm",
+                exportOptions: { columns: [1, 2, 3, 4, 5] },
+            },
+            {
+                extend: "excel",
+                text: "Excel",
+                title: "{{constant('SITE_NOME')}} - Listagem de Modelos de Certificados",
+                className: "btn btn-sm btn-success",
+                exportOptions: { columns: [1, 2, 3, 4, 5] },
+            },
+            {
+                extend: "print",
+                text: "Imprimir",
+                title: "{{constant('SITE_NOME')}} - Listagem de Modelos de Certificados",
+                className: "btn btn-sm",
+                exportOptions: { columns: [1, 2, 3, 4, 5] },
+                customize: function (win) {
+                    $(win.document.body).css("background-color", "white");
+                    $(win.document.body).css("color", "black");
+                    $(win.document.body)
+                        .find("table")
+                        .addClass("compact")
+                        .css("font-size", "inherit");
+                },
+            },
+            {
+                extend: "pdf",
+                text: "PDF",
+                title: "{{constant('SITE_NOME')}} - Listagem de Modelos de Certificados",
+                className: "btn btn-sm",
+                exportOptions: { columns: [1, 2, 3, 4, 5] },
+
+            },
+        ],
+        initComplete: function () {
+            const observer = new MutationObserver((mutations, obs) => {
+                if (
+                    document.querySelector(".buttons-copy") &&
+                    document.querySelector(".buttons-excel") &&
+                    document.querySelector(".buttons-print")
+            ) {
+                    $(".dt-buttons, .dt-search").wrapAll(
+                        '<div class="buttons_flex_celular d-flex justify-content-between mt-1 mb-2"></div>'
+                    );
+                    $(".dt-info, .dt-paging").wrapAll(
+                        '<div class="buttons_flex_celular btns-infos d-flex justify-content-between mt-1 mb-2"></div>'
+                    );
+                    $(".buttons-copy span").before('<i class="bi bi-clipboard-check-fill me-1"></i>');
+                    $(".buttons-excel span").before('<i class="bi bi-file-earmark-spreadsheet-fill me-1"></i>');
+                    $(".buttons-print span").before('<i class="bi bi-printer-fill me-1"></i>');
+                    $(".buttons-pdf span").before('<i class="bi bi-file-pdf-fill me-1"></i>');
+                    obs.disconnect();
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        },
+    });
+
+    function excluirModeloCertificado(id) {
+        Swal.fire({
+            title: 'Excluir Modelo de Certificado?',
+            html: "Você tem certeza que deseja excluir este modelo de certificado? <strong class='text-danger'>Esta ação não pode ser desfeita, e removerá todos os certificados gerados para este modelo!</strong>",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#d33',
+            theme: temaAlerta
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/admin/certificados/excluir/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: id
+                    })
+                })
+                    .then(async (response) => {
+                        const data = await response.json();
+                        if (data.status) {
+                            Swal.fire({
+                                icon: "success",
+                                title: "Modelo de Certificado Excluído",
+                                text: "Modelo de Certificado excluído com sucesso!",
+                                confirmButtonColor: "green",
+                                confirmButtonText: "Ok",
+                                theme: `${temaAlerta}`
+                            }).then(() => {
+                                const tabela = $("#tabelaModelos").DataTable();
+                                const row = tabela.rows().data().toArray().find(r => r.id === id);
+
+                                if (row) {
+                                    const rowIndex = tabela.rows((idx, data) => data.id === id).indexes();
+                                    tabela.rows(rowIndex).remove().draw();
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Erro!",
+                                text: data?.mensagem || "Erro ao excluir o modelo de certificado.",
+                                confirmButtonColor: "#d33",
+                                confirmButtonText: "Ok",
+                                theme: `${temaAlerta}`
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Erro!",
+                            text: "Erro ao excluir o modelo de certificado: " + error,
+                            confirmButtonColor: "#d33",
+                            confirmButtonText: "Ok",
+                            theme: `${temaAlerta}`
+                        })
+                    });
+            }
+        });
+    }
+
+    function editarModeloCertificado(id) {
+        Swal.fire({
+            title: 'Visualização / Edição de Modelo de Certificado',
+            text: 'Ao editar este modelo, você modificará o modelo base para todos os certificados gerados a partir dele, então se deseja alterar algo neste modelo para certificados novos, é preferivel criar uma cópia deste modelo. Deseja continuar?',
+            theme: temaAlerta,
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, continuar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#0d6efd',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `/admin/certificados/gerar-modelo?id=${id}`;
+            }
+        })
+    }
+function copiarModelo(id, nomeOriginal) {
+    Swal.fire({
+        title: 'Copiar Modelo',
+        html: `
+            <p class="mb-3">Você está prestes a criar uma cópia do modelo: <strong>"${nomeOriginal}"</strong></p>
+            <div class="mb-3">
+                <label for="novoNome" class="form-label">Novo nome do modelo:</label>
+                <input type="text" class="form-control" id="novoNome" placeholder="Digite o nome para a cópia" value="Cópia de ${nomeOriginal}">
+            </div>
+        `,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Criar Cópia',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#0d6efd',
+        theme: temaAlerta,
+        preConfirm: () => {
+            const novoNome = document.getElementById('novoNome').value.trim();
+            if (!novoNome) {
+                Swal.showValidationMessage('Por favor, digite um nome para a cópia');
+                return false;
+            }
+            if (novoNome.length < 2) {
+                Swal.showValidationMessage('O nome deve ter pelo menos 2 caracteres');
+                return false;
+            }
+            return { novoNome: novoNome };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const { novoNome } = result.value;
+            
+            Swal.fire({
+                title: 'Criando cópia...',
+                text: 'Aguarde enquanto criamos a cópia do modelo',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch('/admin/certificados/copiar-modelo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id_modelo: id,
+                    novo_nome: novoNome
+                })
+            })
+            .then(async (response) => {
+                const data = await response.json();
+                if (data.status) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Cópia Criada!",
+                        
+                        confirmButtonColor: "green",
+                        showConfirmButton: false,
+                        theme: temaAlerta
+                    }).then(() => {
+                            location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Erro!",
+                        text: data.mensagem || "Erro ao copiar o modelo.",
+                        confirmButtonColor: "#d33",
+                        confirmButtonText: "Ok",
+                        theme: temaAlerta
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: "error",
+                    title: "Erro!",
+                    text: "Erro ao copiar o modelo: " + error,
+                    confirmButtonColor: "#d33",
+                    confirmButtonText: "Ok",
+                    theme: temaAlerta
+                });
+            });
+        }
+    });
+}
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tutorialListagemVisto = localStorage.getItem('tutorial_listagem_visto');
+    
+    function iniciarTutorialListagem() {
+        const driver = window.driver.js.driver;
+
+        function scrollToElement(selector) {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center'
+                });
+            }
+        }
+
+        let driverObj = driver({
+            popoverClass: 'bg-' + temaAlerta + ' text-body',
+            showProgress: true,
+            steps: [
+                {
+                    element: ".aba",
+                    popover: {
+                        title: 'Listagem de Modelos de Certificados <i class="bi bi-card-checklist"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Bem-vindo à listagem de modelos de certificados!</strong></p>
+                            <p>Aqui você gerencia todos os modelos criados e pode executar diversas ações.</p>
+                            <p class="mb-0">Vamos explorar todas as funcionalidades disponíveis!</p>
+                        </div>
+                        `,
+                        side: "center",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#tabelaModelos');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#tabelaModelos",
+                    popover: {
+                        title: 'Tabela de Modelos <i class="bi bi-table"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Esta tabela mostra todos os seus modelos de certificado.</strong></p>
+                            <p>Você pode:</p>
+                            <ul class="small">
+                                <li>Visualizar todos os modelos criados</li>
+                                <li>Filtrar e buscar modelos específicos</li>
+                                <li>Ordenar por nome ou data</li>
+                                <li>Ver informações resumidas</li>
+                            </ul>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#tabelaModelos thead th:nth-child(1)');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#tabelaModelos thead th:nth-child(1)",
+                    popover: {
+                        title: 'Visualização do Fundo <i class="bi bi-image"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Veja uma miniatura do fundo de cada modelo.</strong></p>
+                            <p>Esta coluna mostra:</p>
+                            <ul class="small">
+                                <li>Imagem de fundo do certificado</li>
+                                <li>Visualização rápida do design</li>
+                                <li>Identificação visual do modelo</li>
+                            </ul>
+                            <p class="mb-0"><em>Modelos sem fundo aparecem com "#"</em></p>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#tabelaModelos thead th:nth-child(2)');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#tabelaModelos thead th:nth-child(2)",
+                    popover: {
+                        title: 'Nome do Modelo <i class="bi bi-tag"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Identifique seus modelos pelo nome.</strong></p>
+                            <p>Use nomes descritivos como:</p>
+                            <ul class="small">
+                                <li>"Certificado Curso TI"</li>
+                                <li>"Workshop Marketing Digital"</li>
+                                <li>"Treinamento Presencial"</li>
+                                <li>"Modelo Empresarial"</li>
+                            </ul>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#tabelaModelos thead th:nth-child(3)');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#tabelaModelos thead th:nth-child(3)",
+                    popover: {
+                        title: 'Orientação da Página <i class="bi bi-layout-three-columns"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Veja a orientação de cada modelo.</strong></p>
+                            <p><span class="badge bg-primary">Paisagem</span> - Layout horizontal</p>
+                            <p><span class="badge bg-warning">Retrato</span> - Layout vertical</p>
+                            <p class="mb-0"><em>Escolha a orientação que melhor se adapta ao seu design</em></p>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#tabelaModelos thead th:nth-child(6)');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#tabelaModelos thead th:nth-child(6)",
+                    popover: {
+                        title: 'Quantidade de Páginas <i class="bi bi-file-earmark"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Veja quantas páginas cada modelo possui.</strong></p>
+                            <p>Útil para:</p>
+                            <ul class="small">
+                                <li>Identificar modelos complexos</li>
+                                <li>Planejar certificados com anexos</li>
+                                <li>Organizar documentos extensos</li>
+                            </ul>
+                            <p class="mb-0"><em>Certificados podem ter múltiplas páginas</em></p>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#tabelaModelos thead th:nth-child(7)');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#tabelaModelos thead th:nth-child(7)",
+                    popover: {
+                        title: 'Ações do Modelo <i class="bi bi-gear"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Gerencie cada modelo individualmente.</strong></p>
+                            <p>Clique nos três pontos para ver as opções:</p>
+                            <ul class="small">
+                                <li><i class="bi bi-eye text-primary"></i> <strong>Ver/Editar:</strong> Visualizar e modificar o design</li>
+                                <li><i class="bi bi-card-list text-success"></i> <strong>Gerar Certificados:</strong> Criar certificados em lote</li>
+                                <li><i class="bi bi-copy text-info"></i> <strong>Copiar Modelo:</strong> Criar uma cópia para modificações</li>
+                                <li><i class="bi bi-trash text-danger"></i> <strong>Excluir:</strong> Remover modelo e seus certificados</li>
+                            </ul>
+                        </div>
+                        `,
+                        side: "left",
+                        align: "start",
+                        onNextClick: () => {
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                
+                {
+                    element: ".dt-buttons",
+                    popover: {
+                        title: 'Exportação de Dados <i class="bi bi-download"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Exporte a listagem para diferentes formatos.</strong></p>
+                            <p>Opções disponíveis:</p>
+                            <ul class="small">
+                                <li><i class="bi bi-clipboard-check-fill"></i> <strong>Copiar:</strong> Copia dados para área de transferência</li>
+                                <li><i class="bi bi-file-earmark-spreadsheet-fill"></i> <strong>Excel:</strong> Exporta para planilha Excel</li>
+                                <li><i class="bi bi-printer-fill"></i> <strong>Imprimir:</strong> Gera versão para impressão</li>
+                                <li><i class="bi bi-file-pdf-fill"></i> <strong>PDF:</strong> Cria arquivo PDF da listagem</li>
+                            </ul>
+                        </div>
+                        `,
+                        side: "bottom",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('.dataTables_filter');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: ".dt-search",
+                    popover: {
+                        title: 'Busca Rápida <i class="bi bi-search"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Encontre modelos específicos rapidamente.</strong></p>
+                            <p>Digite para buscar por:</p>
+                            <ul class="small">
+                                <li>Nome do modelo</li>
+                                <li>Orientação (paisagem/retrato)</li>
+                                <li>Datas de criação</li>
+                            </ul>
+                            <p class="mb-0"><em>A busca é feita em tempo real</em></p>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('.dataTables_info');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: ".btns-infos",
+                    popover: {
+                        title: 'Informações da Tabela <i class="bi bi-info-circle"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Controle de paginação e registros.</strong></p>
+                            <p>Aqui você vê:</p>
+                            <ul class="small">
+                                <li>Quantos modelos estão sendo mostrados</li>
+                                <li>Total de modelos no sistema</li>
+                                <li>Número da página atual</li>
+                            </ul>
+                            <p class="mb-0"><em>Use as setas para navegar entre páginas</em></p>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: ".aba",
+                    popover: {
+                        title: 'Tutorial Finalizado <i class="bi bi-check-circle"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Você concluiu o tour pela listagem de modelos!</strong></p>
+                            <p>Agora você está pronto para gerenciar seus modelos de certificados com eficiência.</p>
+                            <p class="mb-0">Lembre-se, você pode reiniciar este tutorial a qualquer momento clicando no botão "Tour da Listagem" no canto inferior direito.</p>
+                        </div>
+                        `,
+                        side: "center",
+                        align: "start",
+                        onNextClick: () => { driverObj.destroy();  },
+                    },
+                }
+            ],
+            onDestroyed: () => {
+                localStorage.setItem('tutorial_listagem_visto', 'true');
+                const openDropdowns = document.querySelectorAll('.dropdown-menu.show');
+                openDropdowns.forEach(dropdown => {
+                    const toggle = dropdown.previousElementSibling;
+                    if (toggle) toggle.click();
+                });
+            }
+        });
+
+        driverObj.drive();
+    }
+
+    if (!tutorialListagemVisto) {
+        setTimeout(() => {
+            iniciarTutorialListagem();
+        }, 300);
+    }
+
+    const botaoTourListagem = document.createElement('button');
+    botaoTourListagem.className = 'btn btn-warning position-fixed';
+    botaoTourListagem.style.cssText = 'position: fixed; bottom: 7px; right: 70px; z-index: 999999;';
+    botaoTourListagem.innerHTML = '<i class="bi bi-card-checklist"></i> Tour da Listagem';
+    botaoTourListagem.addEventListener('click', iniciarTutorialListagem);
+    
+    document.body.appendChild(botaoTourListagem);
+});
+</script>
+{% endblock %}

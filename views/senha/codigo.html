@@ -1,0 +1,94 @@
+{% extends 'base/base.html' %} {% block conteudo %} {% if aviso is not empty %}
+<p class="alert alert-{{tipo_aviso}} mx-4">{{aviso}}</p>
+{% endif %}
+
+<div class="container mt-5 mb-4" style="min-height: 100vh">
+  <div class="row bg-body border p-2 mx-2 rounded">
+    <div class="col-md-6 d-none d-md-block">
+      <img
+        src="/assets/img/senha.png"
+        alt="Image"
+        class="img-fluid opacity-75"
+      />
+    </div>
+    <div class="col-md-6 mt-4 d-flex align-items-center justify-content-center">
+      <div class="row justify-content-center">
+        <div class="col-md-10">
+          <div class="mb-4">
+            <h3>
+              Redefinir sua senha em <strong>{{constant('SITE_NOME')}}</strong>
+            </h3>
+            <p class="mb-4">Insira uma nova senha.</p>
+          </div>
+          <form method="post">
+            <div class="form-control mb-2 p-3">
+              <!-- Código de redefinição -->
+              <input
+                type="hidden"
+                id="inputCodigo"
+                name="inputCodigo"
+                placeholder="********"
+                minlength="8"
+                maxlength="8"
+                title="Digite os 8 dígitos do código"
+                required
+                value="{{codigo}}"
+              />
+
+              <!-- Nova senha -->
+              <div class="form-group required mb-3">
+                <label class="form-label" for="inputSenha">Nova senha</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="inputSenha"
+                  name="inputSenha"
+                  placeholder="Digite sua nova senha"
+                  minlength="8"
+                  required
+                />
+              </div>
+
+              <!-- Confirmar senha -->
+              <div class="form-group required mb-3">
+                <label class="form-label" for="inputConfirmarSenha"
+                  >Confirmar nova senha</label
+                >
+                <input
+                  type="password"
+                  class="form-control"
+                  id="inputConfirmarSenha"
+                  name="inputConfirmarSenha"
+                  placeholder="Confirme sua nova senha"
+                  minlength="8"
+                  required
+                />
+              </div>
+
+              <button type="submit" id="btnConfirmar" class="btn btn-dark">
+                Confirmar <i class="bi bi-check2-circle"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="https://storyset.com/online" hidden
+  >Online illustrations by Storyset</a
+>
+
+<script>
+  document.querySelector("form").addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    document.getElementById("btnConfirmar").disabled = true;
+    document.getElementById("btnConfirmar").innerHTML =
+      'Redefinindo Senha <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+    this.submit();
+  });
+</script>
+{% endblock %}

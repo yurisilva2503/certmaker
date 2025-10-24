@@ -1,0 +1,1207 @@
+{% extends '/admin/base/base.html' %}
+
+{% block conteudo %}
+<link
+    href="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.2/b-3.2.4/b-colvis-3.2.4/b-html5-3.2.4/b-print-3.2.4/r-3.0.5/datatables.min.css"
+    rel="stylesheet" integrity="sha384-kF7pDsQNJ594osO3qa/uBV3zmWK1GkBv6q8vmvgMuqR8O2uChR8ziL8phUE7tfE0"
+    crossorigin="anonymous">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"
+    integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7"
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"
+    integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n"
+    crossorigin="anonymous"></script>
+<script
+    src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.2/b-3.2.4/b-colvis-3.2.4/b-html5-3.2.4/b-print-3.2.4/r-3.0.5/datatables.min.js"
+    integrity="sha384-/ElAk7FHyIpqPv8ADuOBupFPeZcP6fOn9hNzQH3T2NHSaPI0RpSOJHFAXySCFyq/"
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+    .buttons-copy {
+        --bs-btn-color: #fff;
+        --bs-btn-bg: #0d6efd;
+        --bs-btn-border-color: #0d6efd;
+        --bs-btn-hover-color: #fff;
+        --bs-btn-hover-bg: #0b5ed7;
+        --bs-btn-hover-border-color: #0a58ca;
+        --bs-btn-focus-shadow-rgb: 49, 132, 253;
+        --bs-btn-active-color: #fff;
+        --bs-btn-active-bg: #0a58ca;
+        --bs-btn-active-border-color: #0a53be;
+        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        --bs-btn-disabled-color: #fff;
+        --bs-btn-disabled-bg: #0d6efd;
+        --bs-btn-disabled-border-color: #0d6efd;
+    }
+
+    .buttons-print {
+        --bs-btn-color: #000;
+        --bs-btn-bg: #ffc107;
+        --bs-btn-border-color: #ffc107;
+        --bs-btn-hover-color: #000;
+        --bs-btn-hover-bg: #ffca2c;
+        --bs-btn-hover-border-color: #ffc720;
+        --bs-btn-focus-shadow-rgb: 217, 164, 6;
+        --bs-btn-active-color: #000;
+        --bs-btn-active-bg: #ffcd39;
+        --bs-btn-active-border-color: #ffc720;
+        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        --bs-btn-disabled-color: #000;
+        --bs-btn-disabled-bg: #ffc107;
+        --bs-btn-disabled-border-color: #ffc107;
+    }
+
+    .buttons-pdf {
+        --bs-btn-color: #fff;
+        --bs-btn-bg: #dc3545;
+        --bs-btn-border-color: #dc3545;
+        --bs-btn-hover-color: #fff;
+        --bs-btn-hover-bg: #bb2d3b;
+        --bs-btn-hover-border-color: #b02a37;
+        --bs-btn-focus-shadow-rgb: 225, 83, 97;
+        --bs-btn-active-color: #fff;
+        --bs-btn-active-bg: #b02a37;
+        --bs-btn-active-border-color: #a52834;
+        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        --bs-btn-disabled-color: #fff;
+        --bs-btn-disabled-bg: #dc3545;
+        --bs-btn-disabled-border-color: #dc3545;
+    }
+
+    .dropdown-toggle::after {
+        display: none;
+    }
+
+    /* Estilos para o modal de certificado */
+    .certificado-modal-content {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .pdf-viewer {
+        width: 100%;
+        height: 500px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+    }
+
+    .certificado-info {
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }
+</style>
+
+<div class="app-content-body">
+    <div class="container-xl mt-2 fade-in mb-4" style="min-height: 100vh">
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card card-primary card-outline mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            {% if aviso is not empty %}
+                            <p class="alert alert-{{tipo_aviso}}">{{aviso}}</p>
+                            {% endif %}
+                            <div class="col-md-12">
+                                <table id="tabelaCertificados" class="table table-striped"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{certificados|raw}}
+
+<script>
+    const { jsPDF } = window.jspdf;
+    let pdfGerado = null;
+    let pdfUrl = null;
+
+    function extractTextLines(htmlContent) {
+        if (!htmlContent) return [''];
+        
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, 'text/html');
+        const lines = [];
+        
+        function processNode(node, currentLine = '') {
+            if (node.nodeType === Node.TEXT_NODE) {
+                return currentLine + node.textContent;
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+                const tagName = node.tagName.toLowerCase();
+                
+                if (tagName === 'ul' || tagName === 'ol') {
+                    Array.from(node.children).forEach(li => {
+                        const listItemContent = processNode(li);
+                        const marker = tagName === 'ul' ? '• ' : (Array.from(node.children).indexOf(li) + 1) + '. ';
+                        lines.push(marker + listItemContent);
+                    });
+                    return currentLine;
+                }
+                else if (tagName === 'li') {
+                    let liContent = '';
+                    Array.from(node.childNodes).forEach(child => {
+                        liContent += processNode(child, '');
+                    });
+                    return liContent;
+                }
+                else if (tagName === 'br') {
+                    lines.push(currentLine);
+                    return '';
+                }
+                else if (tagName === 'p' || tagName === 'div') {
+                    if (currentLine) {
+                        lines.push(currentLine);
+                    }
+                    let pContent = '';
+                    Array.from(node.childNodes).forEach(child => {
+                        pContent = processNode(child, pContent);
+                    });
+                    if (pContent) {
+                        lines.push(pContent);
+                    }
+                    return '';
+                }
+                else {
+                    let elementContent = '';
+                    Array.from(node.childNodes).forEach(child => {
+                        elementContent = processNode(child, elementContent);
+                    });
+                    
+                    if (tagName === 'strong' || tagName === 'b') {
+                        return currentLine + `<strong>${elementContent}</strong>`;
+                    } else if (tagName === 'em' || tagName === 'i') {
+                        return currentLine + `<em>${elementContent}</em>`;
+                    } else if (tagName === 'u') {
+                        return currentLine + `<u>${elementContent}</u>`;
+                    } else if (tagName === 'span') {
+                        const style = node.getAttribute('style') || '';
+                        return currentLine + `<span style="${style}">${elementContent}</span>`;
+                    } else {
+                        return currentLine + elementContent;
+                    }
+                }
+            }
+            return currentLine;
+        }
+        
+        Array.from(doc.body.childNodes).forEach(node => {
+            processNode(node, '');
+        });
+        
+        const filteredLines = lines.filter(line => line.trim() !== '');
+        return filteredLines.length > 0 ? filteredLines : [''];
+    }
+
+    function getTextXPosition(el, scaleFactor = 1) {
+        const scaledW = el.w * scaleFactor;
+        const scaledX = el.x * scaleFactor;
+        const padding = 2 * scaleFactor;
+        
+        switch (el.align) {
+            case "center":
+                return scaledX + scaledW / 2;
+            case "right":
+                return scaledX + scaledW - padding;
+            default:
+                return scaledX + padding;
+        }
+    }
+
+    function renderFormattedLineHighRes(ctx, line, x, y, el, fontSize, scaleFactor) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(line, 'text/html');
+        const container = doc.body;
+        
+        ctx.textBaseline = "alphabetic";
+        ctx.textAlign = "left";
+        
+        let totalWidth = 0;
+        const textSegments = [];
+        
+        function processNode(node, currentStyles = {}) {
+            const styles = { ...currentStyles };
+            
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                const tagName = node.tagName.toLowerCase();
+                const style = node.style;
+
+                if (tagName === 'strong' || tagName === 'b' || style.fontWeight === 'bold') {
+                    styles.fontWeight = 'bold';
+                }
+                if (tagName === 'em' || tagName === 'i' || style.fontStyle === 'italic') {
+                    styles.fontStyle = 'italic';
+                }
+                if (tagName === 'u' || style.textDecoration === 'underline') {
+                    styles.textDecoration = 'underline';
+                }
+                
+                if (style.color) {
+                    styles.color = style.color;
+                }
+                
+                Array.from(node.childNodes).forEach(child => {
+                    processNode(child, styles);
+                });
+                
+            } else if (node.nodeType === Node.TEXT_NODE) {
+                const text = node.textContent;
+                if (!text.trim()) return;
+                
+                const fontWeight = styles.fontWeight || (el.fontWeight === "bold" ? "bold" : "normal");
+                const fontStyle = styles.fontStyle || "normal";
+                const fontFamily = el.font || "Helvetica";
+                
+                const fontString = `${fontWeight} ${fontStyle} ${fontSize}px ${fontFamily}`;
+                
+                ctx.font = fontString;
+                const width = ctx.measureText(text).width;
+                totalWidth += width;
+                
+                textSegments.push({
+                    content: text,
+                    width,
+                    font: fontString,
+                    color: styles.color || el.color || "#222",
+                    textDecoration: styles.textDecoration || 'none',
+                    fontWeight: fontWeight,
+                    fontStyle: fontStyle
+                });
+            }
+        }
+        
+        Array.from(container.childNodes).forEach(node => {
+            processNode(node, {});
+        });
+        
+        let startX = x;
+        if (el.align === "center") {
+            startX = x - totalWidth / 2;
+        } else if (el.align === "right") {
+            startX = x - totalWidth;
+        }
+        
+        let currentX = startX;
+        
+        for (const segment of textSegments) {
+            ctx.font = segment.font;
+            ctx.fillStyle = segment.color;
+            
+            ctx.fillText(segment.content, currentX, y);
+            
+            if (segment.textDecoration === "underline") {
+                ctx.strokeStyle = segment.color;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(currentX, y + 2);
+                ctx.lineTo(currentX + segment.width, y + 2);
+                ctx.stroke();
+            }
+            
+            currentX += segment.width;
+        }
+    }
+
+    function renderFormattedTextHighRes(ctx, el, scaleFactor, dados) {
+        let text = el.text;
+        if (dados) {
+            text = text.replace(/\{([^}]+)\}/gi, (match, tag) => {
+                const tagLower = tag.toLowerCase();
+                for (const key in dados) {
+                    if (key.toLowerCase() === tagLower) {
+                        if (['conteudoprogramatico', 'local', 'curso', 'cargahoraria', 'periodo', 'data', 'instituicao', 'coordenador', 'ministrante', 'cidade', 'estado'].includes(tagLower) && dados[key]) {
+                            return dados[key];
+                        }
+                        return dados[key] || '';
+                    }
+                }
+                return match;
+            });
+        }
+        
+        const scaledFontSize = el.fontSize * scaleFactor;
+        const lines = extractTextLines(text);
+        const lineHeight = scaledFontSize * 1.2;
+        
+        let startY;
+        const totalTextHeight = lines.length * lineHeight;
+        
+        switch (el.verticalAlign || "middle") {
+            case "top":
+                startY = el.y * scaleFactor + lineHeight;
+                break;
+            case "bottom":
+                startY = el.y * scaleFactor + el.h * scaleFactor - totalTextHeight + lineHeight;
+                break;
+            case "middle":
+            default:
+                startY = el.y * scaleFactor + (el.h * scaleFactor - totalTextHeight) / 2 + lineHeight;
+                break;
+        }
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (!line) continue;
+            
+            const x = getTextXPosition(el, scaleFactor);
+            renderFormattedLineHighRes(ctx, line, x, startY + (i * lineHeight), el, scaledFontSize, scaleFactor);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        carregarTabela(certificados);
+    })
+
+    async function carregarTabela(certificados) {
+        const mapaModelos = {};
+        await Promise.all(certificados.map(async (certificado) => {
+            try {
+                const req = await fetch(`/admin/certificados/obter-modelo/${certificado.id_modelo}`);
+                const res = await req.json();
+                mapaModelos[certificado.id_modelo] = res.modelo || '-';
+            } catch (e) {
+                mapaModelos[certificado.id_modelo] = '-';
+            }
+        }));
+
+        $("#tabelaCertificados").DataTable({
+        ordering: false,
+        processing: true,
+        paging: true,
+        data: certificados,
+        pageLength: 10,
+        responsive: true,
+        lengthChange: false,
+        searching: true,
+        info: true,
+        columns: [
+            { data: "codigo_verificacao", title: "Código", className: "all" },
+            { 
+                data: "id_modelo",
+                title: "Background",
+                render: function (data) {
+                    let bg = mapaModelos[data].background;
+
+                    if (!bg && mapaModelos[data].paginas) {
+                        let paginas = mapaModelos[data].paginas;
+                        try {
+                            if (typeof paginas === "string") {
+                                paginas = JSON.parse(paginas);
+                            }
+                            if (Array.isArray(paginas) && paginas.length > 0 && paginas[0].background) {
+                                bg = paginas[0].background;
+                            }
+                        } catch(e) {
+                            console.error("Erro ao processar paginas:", e);
+                        }
+                    }
+
+                    if (bg) {
+                        return '<img src="' + bg + '" class="img-fluid" style="max-width: 100px; max-height: 100px;"/>';
+                    } else {
+                        return '#';
+                    }
+                }
+            },
+            { data: "nome_aluno", title: "Aluno", className: "all" },
+            {
+                data: "curso", title: "Curso", className: "all", render: function (data) {
+                    return data ? data : '-';
+                }
+            },
+            {
+                data: "data_emissao",
+                title: "Emissão",
+                className: "all",
+                render: function (data) {
+                    return data ? new Date(data).toLocaleDateString('pt-BR') : '-';
+                }
+            },
+            {
+                data: "data_validade",
+                title: "Validade",
+                className: "all",
+                render: function (data) {
+                    return data ? new Date(data).toLocaleDateString('pt-BR') : '-';
+                }
+            },
+            {
+                data: "status",
+                title: "Status",
+                className: "text-center",
+                render: function (data) {
+                    let color = data === 'ativo' ? 'primary' : data === 'inativo' ? 'secondary' : 'danger';
+                    return `<span class="badge bg-${color}">${Helpers.primeiraLetraMaiuscula(data)}</span>`;
+                }
+            },
+            {
+                data: null,
+                title: "Ações",
+                orderable: false,
+                searchable: false,
+                className: "text-center",
+                render: function (data, type, row) {
+                    return `
+                    <div class="dropdown">
+                        <button class="btn shadow-none dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="visualizarCertificado('${row.id}')">
+                                    <i class="bi bi-eye me-2"></i>Visualizar
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="#" onclick="excluirCertificado('${row.id}')">
+                                    <i class="bi bi-trash me-2"></i>Excluir
+                                </a>
+                            </li>
+                        </ul>
+                    </div>`;
+                }
+            }
+        ],
+        language: {
+            url: '//cdn.datatables.net/plug-ins/2.3.2/i18n/pt-BR.json',
+            paginate: {
+                first: "<<",
+                last: ">>",
+                next: ">",
+                previous: "<"
+            }
+        },
+        dom: "Bfrtip",
+        buttons: [
+            {
+                extend: "copy",
+                text: "Copiar",
+                title: "{{constant('SITE_NOME')}} - Listagem de Certificados",
+                className: "btn btn-sm",
+                exportOptions: { columns: ":visible:not(:last-child)" }
+            },
+            {
+                extend: "excel",
+                text: "Excel",
+                title: "{{constant('SITE_NOME')}} - Listagem de Certificados",
+                className: "btn btn-sm btn-success",
+                exportOptions: { columns: ":visible:not(:last-child)" }
+            },
+            {
+                extend: "print",
+                text: "Imprimir",
+                title: "{{constant('SITE_NOME')}} - Listagem de Certificados",
+                className: "btn btn-sm",
+                exportOptions: { columns: ":visible:not(:last-child)" },
+                customize: function (win) {
+                    $(win.document.body).css("background-color", "white").css("color", "black");
+                    $(win.document.body).find("table").addClass("compact").css("font-size", "inherit");
+                }
+            },
+            {
+                extend: "pdf",
+                text: "PDF",
+                title: "{{constant('SITE_NOME')}} - Listagem de Certificados",
+                className: "btn btn-sm",
+                exportOptions: { columns: ":visible:not(:last-child)" }
+            },
+        ],
+        initComplete: function () {
+            const observer = new MutationObserver((mutations, obs) => {
+                if ($(".buttons-copy").length && $(".buttons-excel").length) {
+                    $(".dt-buttons, .dt-search").wrapAll('<div class="buttons_flex_celular d-flex justify-content-between mt-1 mb-2"></div>');
+                    $(".dt-info, .dt-paging").wrapAll('<div class="buttons_flex_celular btns-info d-flex justify-content-between mt-1 mb-2"></div>');
+                    $(".buttons-copy span").before('<i class="bi bi-clipboard-check-fill me-1"></i>');
+                    $(".buttons-excel span").before('<i class="bi bi-file-earmark-spreadsheet-fill me-1"></i>');
+                    $(".buttons-print span").before('<i class="bi bi-printer-fill me-1"></i>');
+                    $(".buttons-pdf span").before('<i class="bi bi-file-pdf-fill me-1"></i>');
+                    obs.disconnect();
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        }
+    });
+
+    }
+
+    async function visualizarCertificado(id) {
+        try {
+            Swal.fire({
+                title: 'Carregando Certificado...',
+                html: `
+                    <div class="text-center">
+                        <div class="spinner-border text-primary mb-3" role="status"></div>
+                        <p>Carregando dados do certificado...</p>
+                    </div>
+                `,
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                theme: temaAlerta
+            });
+
+            const response = await fetch(`/admin/certificados/obter-dados-completos?id=${id}`);
+            const resultado = await response.json();
+
+            if (!resultado.status) {
+                throw new Error(resultado.mensagem);
+            }
+
+            const modelo = resultado.modelo;
+            const dadosCertificado = resultado.dados;
+            await gerarPDF(modelo, dadosCertificado);
+
+            let pdfBlob = pdfGerado.output('blob');
+            pdfUrl = URL.createObjectURL(pdfBlob);
+
+
+            Swal.fire({
+                title: 'Certificado - ' + (dadosCertificado.nome || dadosCertificado.nome_aluno) + '<i class="bi bi-file-earmark-pdf-fill ms-2"></i>',
+                html: `
+                    <div class="certificado-modal-content">
+                        <div class="certificado-info">
+                            <p><strong>Aluno:</strong> ${dadosCertificado.nome || dadosCertificado.nome_aluno}</p>
+                            <p><strong>Curso:</strong> ${dadosCertificado.curso !== null ? dadosCertificado.curso : 'Não Informado'}</p>
+                            <p><strong>Data de Emissão:</strong> ${dadosCertificado.data_emissao !== null ? formatarData(dadosCertificado.dataEmissao) : 'Não Informado'}</p>
+                            <p><strong>Código:</strong> ${dadosCertificado.codigo_verificacao || dadosCertificado.qrCode}</p>
+                        </div>
+                        <div class="pdf-viewer">
+                            <embed src="${pdfUrl}" type="application/pdf" width="100%" height="100%">
+                        </div>
+                    </div>
+                `,
+                width: 850,
+                showCloseButton: true,
+                showConfirmButton: true,
+                confirmButtonText: '<i class="bi bi-download"></i> Baixar Certificado',
+                confirmButtonColor: '#0B5ED7',
+                theme: temaAlerta,
+                didOpen: () => {
+                    document.querySelector('.swal2-confirm').addEventListener('click', () => {
+                        baixarPDF(dadosCertificado);
+                    });
+                },
+                willClose: () => {
+                    if (pdfUrl) {
+                        URL.revokeObjectURL(pdfUrl);
+                        pdfUrl = null;
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error('Erro ao gerar certificado:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: 'Erro ao gerar certificado: ' + error.message,
+                theme: temaAlerta
+            });
+        }
+    }
+
+    async function gerarPDF(modelo, dadosCertificado) {
+        const DPI = 200;
+        const JPEG_QUALITY = 0.9;
+        const mmW = modelo.orientacao === 'portrait' ? 210 : 297;
+        const mmH = modelo.orientacao === 'portrait' ? 297 : 210;
+
+        let paginas = modelo.paginas || [];
+        if (paginas.length === 0 && modelo.elementos && modelo.elementos.length > 0) {
+            paginas = [{
+                elementos: modelo.elementos,
+                background: modelo.background || null
+            }];
+        }
+
+        if (!Array.isArray(paginas)) {
+            paginas = [paginas];
+        }
+
+        pdfGerado = new jsPDF({
+            orientation: modelo.orientacao || 'portrait',
+            unit: 'mm',
+            format: 'a4',
+            compress: true
+        });
+
+        for (let pageIndex = 0; pageIndex < paginas.length; pageIndex++) {
+            const pagina = paginas[pageIndex];
+            const elementos = Array.isArray(pagina.elementos) ? pagina.elementos : [];
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = Math.round(mmW / 25.4 * DPI);
+            canvas.height = Math.round(mmH / 25.4 * DPI);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const scaleFactor = DPI / 120;
+
+            const backgroundUrl = pagina.background || modelo.background;
+            if (backgroundUrl) {
+                await carregarImagem(ctx, backgroundUrl, 0, 0, canvas.width, canvas.height);
+            }
+
+            await renderizarElementos(ctx, elementos, scaleFactor, dadosCertificado);
+
+            if (pageIndex > 0) {
+                pdfGerado.addPage();
+            }
+
+            const imgData = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+            pdfGerado.addImage(imgData, 'JPEG', 0, 0, mmW, mmH);
+        }
+    }
+
+    async function renderizarElementos(ctx, elementos, scaleFactor, dados) {
+        const imagePromises = [];
+
+        for (const el of elementos) {
+            ctx.save();
+            ctx.globalAlpha = el.opacity ?? 1;
+
+            if (el.rotate) {
+                const centerX = (el.x * scaleFactor) + (el.w * scaleFactor) / 2;
+                const centerY = (el.y * scaleFactor) + (el.h * scaleFactor) / 2;
+                ctx.translate(centerX, centerY);
+                ctx.rotate(el.rotate * Math.PI / 180);
+                ctx.translate(-centerX, -centerY);
+            }
+
+            if (el.type === 'text') {
+                renderFormattedTextHighRes(ctx, el, scaleFactor, dados);
+            } else if (el.type === 'image' && el.src) {
+                imagePromises.push(carregarImagem(ctx, el.src, el.x * scaleFactor, el.y * scaleFactor,
+                    el.w * scaleFactor, el.h * scaleFactor));
+            } else if (el.type === 'qrcode' && el.text) {
+                renderizarQRCode(ctx, el, scaleFactor, dados);
+            }
+
+            ctx.restore();
+        }
+
+        await Promise.all(imagePromises);
+    }
+
+    function renderizarQRCode(ctx, el, scaleFactor, dados) {
+        let qrText = el.text;
+
+        qrText = qrText.replace(/\{([^}]+)\}/gi, (match, tag) => {
+            const tagLower = tag.toLowerCase();
+            for (const key in dados) {
+                if (key.toLowerCase() === tagLower) {
+                    return dados[key] || '';
+                }
+            }
+            return '{' + tag + '}';
+        });
+
+        try {
+            const qr = qrcode(0, 'H');
+            qr.addData(qrText);
+            qr.make();
+
+            const cellSize = Math.min(
+                (el.w * scaleFactor) / qr.getModuleCount(),
+                (el.h * scaleFactor) / qr.getModuleCount()
+            );
+
+            const offsetX = (el.x * scaleFactor) + ((el.w * scaleFactor) - (qr.getModuleCount() * cellSize)) / 2;
+            const offsetY = (el.y * scaleFactor) + ((el.h * scaleFactor) - (qr.getModuleCount() * cellSize)) / 2;
+
+            ctx.fillStyle = el.color || '#000000';
+
+            for (let row = 0; row < qr.getModuleCount(); row++) {
+                for (let col = 0; col < qr.getModuleCount(); col++) {
+                    if (qr.isDark(row, col)) {
+                        ctx.fillRect(offsetX + col * cellSize, offsetY + row * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao gerar QR code:', error);
+        }
+    }
+
+    function carregarImagem(ctx, src, x, y, w, h) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = () => {
+                ctx.drawImage(img, x, y, w, h);
+                resolve();
+            };
+            img.onerror = () => {
+                console.error('Erro ao carregar imagem:', src);
+                resolve();
+            };
+            img.src = src;
+        });
+    }
+
+    function baixarPDF(dadosCertificado) {
+        if (!pdfGerado) return;
+
+        const fileName = `certificado_${(dadosCertificado.nome || dadosCertificado.nome_aluno).replace(/\s+/g, '_')}.pdf`;
+        pdfGerado.save(fileName);
+    }
+
+    function formatarData(dataString) {
+        const data = new Date(dataString);
+        return data.toLocaleDateString('pt-BR') + ' às ' + data.toLocaleTimeString('pt-BR');
+    }
+
+    function excluirCertificado(id) {
+        Swal.fire({
+            title: 'Excluir Certificado?',
+            text: "Você tem certeza que deseja excluir este certificado?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#d33',
+            theme: temaAlerta
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/admin/certificado/excluir/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: id })
+                })
+                    .then(async (response) => {
+                        const data = await response.json();
+                        if (data.status) {
+                            Swal.fire({
+                                icon: "success",
+                                title: "Certificado Excluído",
+                                text: "Certificado excluído com sucesso!",
+                                confirmButtonColor: "green",
+                                theme: temaAlerta
+                            }).then(() => {
+                                const tabela = $("#tabelaCertificados").DataTable();
+                                const row = tabela.rows().data().toArray().find(r => r.id === id);
+                                if (row) {
+                                    const rowIndex = tabela.rows((idx, data) => data.id === id).indexes();
+                                    tabela.rows(rowIndex).remove().draw();
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Erro!",
+                                text: data?.mensagem || "Erro ao excluir o certificado.",
+                                confirmButtonColor: "#d33",
+                                theme: temaAlerta
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Erro!",
+                            text: "Erro ao excluir o certificado: " + error,
+                            confirmButtonColor: "#d33",
+                            theme: temaAlerta
+                        });
+                    });
+            }
+        });
+    }
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tutorialCertificadosVisto = localStorage.getItem('tutorial_certificados_visto');
+    
+    function iniciarTutorialCertificados() {
+        const driver = window.driver.js.driver;
+
+        function scrollToElement(selector) {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center'
+                });
+            }
+        }
+
+        let driverObj = driver({
+            popoverClass: 'bg-' + temaAlerta + ' text-body',
+            showProgress: true,
+            steps: [
+                {
+                    element: ".aba",
+                    popover: {
+                        title: 'Listagem de Certificados Emitidos <i class="bi bi-person-vcard"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Bem-vindo à listagem de certificados emitidos!</strong></p>
+                            <p>Aqui você gerencia todos os certificados que foram gerados no sistema.</p>
+                            <p class="mb-0">Vamos explorar todas as funcionalidades disponíveis!</p>
+                        </div>
+                        `,
+                        side: "center",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#tabelaCertificados');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#tabelaCertificados",
+                    popover: {
+                        title: 'Tabela de Certificados <i class="bi bi-table"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Esta tabela mostra todos os certificados emitidos.</strong></p>
+                            <p>Você pode:</p>
+                            <ul class="small">
+                                <li>Visualizar todos os certificados</li>
+                                <li>Filtrar e buscar certificados específicos</li>
+                                <li>Verificar status e validade</li>
+                                <li>Realizar ações individuais</li>
+                            </ul>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#tabelaCertificados thead th:nth-child(1)');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#tabelaCertificados thead th:nth-child(1)",
+                    popover: {
+                        title: 'Código de Verificação <i class="bi bi-shield-check"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Código único para validação do certificado.</strong></p>
+                            <p>Este código:</p>
+                            <ul class="small">
+                                <li>É único para cada certificado</li>
+                                <li>Pode ser usado para verificação online</li>
+                                <li>Aparece no QR Code e link de validação</li>
+                                <li>Garante a autenticidade do documento</li>
+                            </ul>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#tabelaCertificados thead th:nth-child(2)');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#tabelaCertificados thead th:nth-child(2)",
+                    popover: {
+                        title: 'Background <i class="bi bi-card-checklist"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Imagem de fundo do certificado.</strong></p>
+                            <p>Esta imagem:</p>
+                            <ul class="small">
+                                <li>É única para cada página do certificado</li>
+                            </ul>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#tabelaCertificados thead th:nth-child(3)');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#tabelaCertificados thead th:nth-child(3)",
+                    popover: {
+                        title: 'Nome do Aluno <i class="bi bi-person"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Nome completo do participante.</strong></p>
+                            <p>Informação essencial para:</p>
+                            <ul class="small">
+                                <li>Identificar o destinatário</li>
+                                <li>Buscar certificados específicos</li>
+                                <li>Verificar emissões</li>
+                                <li>Controle de participantes</li>
+                            </ul>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#tabelaCertificados thead th:nth-child(4)');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#tabelaCertificados thead th:nth-child(4)",
+                    popover: {
+                        title: 'Curso/Evento <i class="bi bi-book"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Nome do curso ou evento realizado.</strong></p>
+                            <p>Esta informação:</p>
+                            <ul class="small">
+                                <li>Identifica o tipo de certificação</li>
+                                <li>É útil para filtros e relatórios</li>
+                                <li>Aparece no corpo do certificado</li>
+                                <li>Ajuda na organização por categoria</li>
+                            </ul>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#tabelaCertificados thead th:nth-child(5)');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#tabelaCertificados thead th:nth-child(5)",
+                    popover: {
+                        title: 'Data de Emissão <i class="bi bi-calendar-event"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Data em que o certificado foi emitido.</strong></p>
+                            <p>Informação importante para:</p>
+                            <ul class="small">
+                                <li>Controle temporal das emissões</li>
+                                <li>Relatórios por período</li>
+                                <li>Verificação de validade</li>
+                                <li>Auditoria e documentação</li>
+                            </ul>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#tabelaCertificados thead th:nth-child(6)');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#tabelaCertificados thead th:nth-child(6)",
+                    popover: {
+                        title: 'Data de Validade <i class="bi bi-calendar-x"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Data limite de validade do certificado.</strong></p>
+                            <p>Alguns certificados possuem:</p>
+                            <ul class="small">
+                                <li>Validade determinada</li>
+                                <li>Prazo de certificação</li>
+                                <li>Data para reciclagem</li>
+                                <li>Período de vigência</li>
+                            </ul>
+                            <p class="mb-0"><em>Certificados sem validade aparecem com "-"</em></p>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#tabelaCertificados thead th:nth-child(7)');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#tabelaCertificados thead th:nth-child(7)",
+                    popover: {
+                        title: 'Status do Certificado <i class="bi bi-info-circle"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Situação atual do certificado.</strong></p>
+                            <p>Status disponíveis:</p>
+                            <ul class="small">
+                                <li><span class="badge bg-primary">Ativo</span> - Válido e ativo</li>
+                                <li><span class="badge bg-secondary">Inativo</span> - Desativado</li>
+                                <li><span class="badge bg-danger">Expirado</span> - Fora da validade</li>
+                            </ul>
+                            <p class="mb-0"><em>O status afeta a verificação online</em></p>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('#tabelaCertificados thead th:nth-child(8)');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: "#tabelaCertificados thead th:nth-child(8)",
+                    popover: {
+                        title: 'Menu de Ações <i class="bi bi-list-ul"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Opções disponíveis para cada certificado:</strong></p>
+                            <ul class="small">
+                                <li><i class="bi bi-eye text-primary me-2"></i> <strong>Visualizar:</strong> Abre o certificado em alta qualidade com opção de download</li>
+                                <li><i class="bi bi-trash text-danger me-2"></i> <strong>Excluir:</strong> Remove permanentemente o certificado do sistema</li>
+                            </ul>
+                            <p class="mb-0"><em>A visualização mostra o PDF completo como foi gerado</em></p>
+                        </div>
+                        `,
+                        side: "left",
+                        align: "start",
+                        onNextClick: () => {
+                            const openDropdown = document.querySelector('.dropdown-menu.show');
+                            if (openDropdown) {
+                                const dropdownToggle = openDropdown.previousElementSibling;
+                                if (dropdownToggle) dropdownToggle.click();
+                            }
+                            scrollToElement('.dt-buttons');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: ".dt-buttons",
+                    popover: {
+                        title: 'Exportação de Dados <i class="bi bi-download"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Exporte a listagem para diferentes formatos.</strong></p>
+                            <p>Opções disponíveis:</p>
+                            <ul class="small">
+                                <li><i class="bi bi-clipboard-check-fill"></i> <strong>Copiar:</strong> Copia dados para área de transferência</li>
+                                <li><i class="bi bi-file-earmark-spreadsheet-fill"></i> <strong>Excel:</strong> Exporta para planilha Excel</li>
+                                <li><i class="bi bi-printer-fill"></i> <strong>Imprimir:</strong> Gera versão para impressão</li>
+                                <li><i class="bi bi-file-pdf-fill"></i> <strong>PDF:</strong> Cria arquivo PDF da listagem</li>
+                            </ul>
+                            <p class="mb-0"><em>Ideal para relatórios e compartilhamento</em></p>
+                        </div>
+                        `,
+                        side: "bottom",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('.dt-search');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: ".dt-search",
+                    popover: {
+                        title: 'Busca Rápida <i class="bi bi-search"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Encontre certificados específicos rapidamente.</strong></p>
+                            <p>Digite para buscar por:</p>
+                            <ul class="small">
+                                <li>Nome do aluno</li>
+                                <li>Nome do curso</li>
+                                <li>Código de verificação</li>
+                                <li>Status do certificado</li>
+                            </ul>
+                            <p class="mb-0"><em>A busca é feita em tempo real em todas as colunas visíveis</em></p>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            scrollToElement('.btns-info');
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: ".btns-info",
+                    popover: {
+                        title: 'Informações da Tabela <i class="bi bi-info-circle"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Controle de paginação e registros.</strong></p>
+                            <p>Aqui você vê:</p>
+                            <ul class="small">
+                                <li>Quantos certificados estão sendo mostrados</li>
+                                <li>Total de certificados no sistema</li>
+                                <li>Navegação entre páginas</li>
+                            </ul>
+                            <p class="mb-0"><em>Use as setas para navegar quando houver muitos registros</em></p>
+                        </div>
+                        `,
+                        side: "top",
+                        align: "start",
+                        onNextClick: () => {
+                            driverObj.moveNext();
+                        },
+                    },
+                },
+                {
+                    element: ".aba",
+                    popover: {
+                        title: 'Tutorial Finalizado <i class="bi bi-check-circle"></i>',
+                        description: `
+                        <div class="text-start">
+                            <p><strong>Você concluiu o tour pela listagem de certificados!</strong></p>
+                            <p>Agora você está pronto para:</p>
+                            <ul class="small">
+                                <li>Gerenciar todos os certificados emitidos</li>
+                                <li>Visualizar certificados individuais</li>
+                                <li>Manter o controle da emissão</li>
+                            </ul>
+                            <p class="mb-0">Lembre-se, você pode reiniciar este tutorial a qualquer momento clicando no botão "Tour dos Certificados".</p>
+                        </div>
+                        `,
+                        side: "center",
+                        align: "start",
+                        onNextClick: () => { 
+                            localStorage.setItem('tutorial_certificados_visto', 'true');
+                            driverObj.destroy();  
+                        },
+                    },
+                }
+            ],
+
+            onDestroyed: () => {
+                localStorage.setItem('tutorial_certificados_visto', 'true');
+                const openDropdowns = document.querySelectorAll('.dropdown-menu.show');
+                openDropdowns.forEach(dropdown => {
+                    const toggle = dropdown.previousElementSibling;
+                    if (toggle) toggle.click();
+                });
+            }
+        });
+
+        driverObj.drive();
+    }
+
+    if (!tutorialCertificadosVisto) {
+        setTimeout(() => {
+            iniciarTutorialCertificados();
+        }, 300);
+    }
+
+    const botaoTourCertificados = document.createElement('button');
+    botaoTourCertificados.className = 'btn btn-warning position-fixed';
+    botaoTourCertificados.style.cssText = 'position: fixed; bottom: 7px; right: 70px; z-index: 999999;';
+    botaoTourCertificados.innerHTML = '<i class="bi bi-person-vcard"></i> Tour dos Certificados';
+    botaoTourCertificados.addEventListener('click', iniciarTutorialCertificados);
+    
+    document.body.appendChild(botaoTourCertificados);
+});
+</script>
+{% endblock %}
